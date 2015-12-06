@@ -15,5 +15,5 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"/>
+        android:id="@+id/app_listView"/>
 </RelativeLayout>

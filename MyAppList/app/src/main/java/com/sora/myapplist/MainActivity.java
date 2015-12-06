@@ -1,26 +1,21 @@
 package com.sora.myapplist;
 
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
-    private ArrayAdapter<String> adapter;
     private List<ApplicationInfo> applicationInfos;
-    private ApplicationInfo applicationInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +30,13 @@ public class MainActivity extends AppCompatActivity {
         //工具栏
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        listView = (ListView) findViewById(R.id.app_listView);
+        applicationInfos = new ArrayList<ApplicationInfo>();
     }
 
     //获取现有的App信息
     private List<ApplicationInfo> getApplicationInfos(){
+
         return applicationInfos;
     }
 
