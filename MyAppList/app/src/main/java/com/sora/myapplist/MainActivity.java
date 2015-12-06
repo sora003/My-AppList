@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
-    private List<ApplicationInfo> applicationInfos;
+    private List<AppInfo> appInfos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         init();
         //获取App信息
-        getApplicationInfos();
+        getAppInfos();
         listView.setAdapter(appInfoAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -43,14 +42,14 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         listView = (ListView) findViewById(R.id.app_listView);
-        applicationInfos = new ArrayList<ApplicationInfo>();
+        appInfos = new ArrayList<AppInfo>();
         AppInfoAdapter appInfoAdapter = new AppInfoAdapter();
     }
 
     //获取现有的App信息
-    private List<ApplicationInfo> getApplicationInfos(){
+    private List<ApplicationInfo> getAppInfos(){
 
-        return applicationInfos;
+        return appInfos;
     }
 
     //三方应用程序过滤器
