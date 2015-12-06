@@ -1,5 +1,7 @@
 package com.sora.myapplist;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -11,18 +13,47 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
     private ArrayAdapter<String> adapter;
-    
+    private List<ApplicationInfo> applicationInfos;
+    private ApplicationInfo applicationInfo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        init();
+
+
+    }
+
+    private void init(){
+        //工具栏
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+    }
+
+    //获取现有的App信息
+    private List<ApplicationInfo> getApplicationInfos(){
+        return applicationInfos;
+    }
+
+    //三方应用程序过滤器
+    private boolean filterApp(ApplicationInfo applicationInfo){
+        //代表被用户升级过的系统应用
+        if ((applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0){
+            return true;
+        }
+        //代表用户应用
+        else if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+            return true;
+        }
+        return false;
     }
 
     @Override
