@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MyAppList</string>
+    <string name="app_name">My AppList</string>
     <string name="action_settings">Settings</string>
     <string name="text_appName">三国杀</string>
     <string name="text_edition">5.1.1</string>
