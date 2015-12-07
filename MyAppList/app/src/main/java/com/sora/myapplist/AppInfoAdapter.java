@@ -41,7 +41,7 @@ public class AppInfoAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder = null;
         View view = null;
-        if (convertView == null){
+        if (convertView == null || convertView.getTag() == null){
             view = layoutInflater.inflate(R.layout.item_listview,null);
             viewHolder = new ViewHolder(view);
             view.setTag(viewHolder);
