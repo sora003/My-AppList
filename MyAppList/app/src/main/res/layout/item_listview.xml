@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/id_appName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:text="@string/text_appName"
+        android:textColor="#000000"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:id="@+id/id_edition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/id_appName"
+        android:layout_marginLeft="15dp"
+        android:layout_alignBottom="@+id/id_appName"
+        android:gravity="bottom"
+        android:text="@string/text_edition"
+        android:textColor="#000000"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/id_appSize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:paddingRight="20dp"
+        android:layout_alignBottom="@+id/id_appName"
+        android:text="@string/text_appSize"
+        android:textColor="#000000"
+        android:textSize="14sp"/>
+
+    <TextView
+        android:id="@+id/id_packageName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_appName"
+        android:paddingLeft="20dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/text_packageName"
+        android:textColor="#000000"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/id_installTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_appSize"
+        android:layout_alignParentRight="true"
+        android:paddingRight="20dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/text_installTime"
+        android:textColor="#000000"
+        android:textSize="14sp"/>
+
+
+</RelativeLayout>

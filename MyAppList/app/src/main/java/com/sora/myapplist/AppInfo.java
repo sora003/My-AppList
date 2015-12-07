@@ -18,7 +18,7 @@ public class AppInfo {
     //版本号
     private String edition;
     //大小
-    private String size;
+    private String appSize;
     //安装时间
     private String installTime;
 
@@ -72,11 +72,11 @@ public class AppInfo {
         this.packageName = packageName;
     }
 
-    public String getSize() {
-        return size;
+    public String getAppSize() {
+        return appSize;
     }
 
-    public void setSize(String size) {
-        this.size = size;
+    public void setAppSize(String appSize) {
+        this.appSize = appSize;
     }
 }
