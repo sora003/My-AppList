@@ -100,11 +100,19 @@ public class MainActivity extends AppCompatActivity {
             if (p.versionName == null){
                 continue;
             }
+            if (!filterApp(p.applicationInfo)){
+                continue;
+            }
+            //获得App创建时对应的文件夹
             String dir = p.applicationInfo.publicSourceDir;
+            //获取App创建时对应文件夹的大小
+            Long size_long = new File(dir).length();
+            //定义时间格式
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            //App创建时对应的文件夹的最近修改时间-最近一次的更新时间
             Date date = new Date(new File(dir).lastModified());
             String appName = (String) p.applicationInfo.loadLabel(getPackageManager());
-            String appSize =Long.toString(new File(dir).length());
+            String appSize =Long.toString(size_long/1024/1024)+"MB";
             String packageName = p.packageName;
             String installTime = formatter.format(date);
             //获取版本名
