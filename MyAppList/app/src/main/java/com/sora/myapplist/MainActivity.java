@@ -1,6 +1,10 @@
 package com.sora.myapplist;
 
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -11,12 +15,14 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ListView listView;
-    private List<AppInfo> appInfos;
+    private ListView listView = null;
+    private List<AppInfo> appInfoList = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,16 +31,15 @@ public class MainActivity extends AppCompatActivity {
         init();
         //获取App信息
         getAppInfos();
+        AppInfoAdapter appInfoAdapter = new AppInfoAdapter(this,appInfoList);
         listView.setAdapter(appInfoAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-            }
-        });
-
-
-
+//        设置click事件
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//
+//            }
+//        });
     }
 
     private void init(){
@@ -42,14 +47,43 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         listView = (ListView) findViewById(R.id.app_listView);
-        appInfos = new ArrayList<AppInfo>();
-        AppInfoAdapter appInfoAdapter = new AppInfoAdapter();
+        appInfoList = new ArrayList<AppInfo>();
     }
 
-    //获取现有的App信息
-    private List<ApplicationInfo> getAppInfos(){
-
-        return appInfos;
+    //获取所有的App信息
+    private void getAppInfos(){
+        //获取PackagManager对象
+        PackageManager packageManager = this.getPackageManager();
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN,null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        //通过查询，获取所有ResolveInfo对象
+        List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(mainIntent,PackageManager.MATCH_DEFAULT_ONLY);
+        //根据Name排序
+        Collections.sort(resolveInfos,new ResolveInfo.DisplayNameComparator(packageManager));
+        if (appInfoList != null){
+            appInfoList.clear();
+            for (ResolveInfo resolveInfo : resolveInfos){
+                String appName = (String) resolveInfo.loadLabel(packageManager);
+                String appSize = "无法获取";
+                String packageName = resolveInfo.activityInfo.packageName;
+                String installTime = "无法获取" ;
+                //获取版本名
+                String editon = null;
+                try {
+                    editon = packageManager.getPackageInfo(packageName,PackageManager.GET_CONFIGURATIONS).versionName;
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+                //构建AppInfo对象
+                AppInfo appInfo = new AppInfo();
+                appInfo.setAppName(appName);
+                appInfo.setEdition(editon);
+                appInfo.setPackageName(packageName);
+                appInfo.setAppSize(appSize);
+                appInfo.setInstallTime(installTime);
+                appInfoList.add(appInfo);
+            }
+        }
     }
 
     //三方应用程序过滤器
