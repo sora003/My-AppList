@@ -9,8 +9,6 @@ import android.graphics.drawable.Drawable;
 public class AppInfo {
     //app名称
     private String appName;
-    //app图标
-    private Drawable appIcon;
     //
     private Intent intent;
     //包名
@@ -23,14 +21,6 @@ public class AppInfo {
     private String installTime;
 
     public AppInfo(){}
-
-    public Drawable getAppIcon() {
-        return appIcon;
-    }
-
-    public void setAppIcon(Drawable appIcon) {
-        this.appIcon = appIcon;
-    }
 
     public String getAppName() {
         return appName;

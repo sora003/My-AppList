@@ -1,9 +1,11 @@
 package com.sora.myapplist;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -12,8 +14,13 @@ import java.util.List;
  */
 public class AppInfoAdapter extends BaseAdapter {
 
-    private List<AppInfo> appInfoList;
-    LayoutInflater layoutInflater;
+    private List<AppInfo> appInfoList = null;
+    LayoutInflater layoutInflater = null;
+
+    public AppInfoAdapter(Context context,List<AppInfo> appInfoList) {
+        layoutInflater = (LayoutInflater) LayoutInflater.from(context);
+        this.appInfoList = appInfoList;
+    }
 
     @Override
     public int getCount() {
@@ -32,10 +39,41 @@ public class AppInfoAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        return null;
+        ViewHolder viewHolder = null;
+        View view = null;
+        if (convertView == null){
+            view = layoutInflater.inflate(R.layout.item_listview,null);
+            viewHolder = new ViewHolder(view);
+            view.setTag(viewHolder);
+        }
+        else{
+            view = convertView;
+            viewHolder = (ViewHolder) convertView.getTag();
+        }
+
+        AppInfo appInfo = (AppInfo) getItem(position);
+        viewHolder.appName.setText(appInfo.getAppName());
+        viewHolder.edition.setText(appInfo.getEdition());
+        viewHolder.appSize.setText(appInfo.getAppSize());
+        viewHolder.packageName.setText(appInfo.getPackageName());
+        viewHolder.installTime.setText(appInfo.getInstallTime());
+        return view;
     }
 
     class ViewHolder{
-        private
+        TextView appName;
+        TextView edition;
+        TextView appSize;
+        TextView packageName;
+        TextView installTime;
+
+        public ViewHolder(View view) {
+            this.appName = (TextView) view.findViewById(R.id.id_appName);
+            this.edition = (TextView) view.findViewById(R.id.id_edition);
+            this.appSize = (TextView) view.findViewById(R.id.id_appSize);
+            this.packageName = (TextView) view.findViewById(R.id.id_packageName);
+            this.installTime = (TextView) view.findViewById(R.id.id_installTime);
+
+        }
     }
 }
