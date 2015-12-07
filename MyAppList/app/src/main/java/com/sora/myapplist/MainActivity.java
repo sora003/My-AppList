@@ -25,9 +25,10 @@ public class MainActivity extends AppCompatActivity {
     private List<AppInfo> appInfoList = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //初始化
         init();
         //获取App信息
         getAppInfos();
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 //        });
     }
 
-    private void init(){
+    public void init(){
         //工具栏
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -50,39 +51,72 @@ public class MainActivity extends AppCompatActivity {
         appInfoList = new ArrayList<AppInfo>();
     }
 
+
+    //    //获取所有的App信息
+//    public void getAppInfos(){
+//        //获取PackagManager对象
+//        PackageManager packageManager = this.getPackageManager();
+//        Intent mainIntent = new Intent(Intent.ACTION_MAIN,null);
+//        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+//        //通过查询，获取所有ResolveInfo对象
+//        List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(mainIntent,PackageManager.MATCH_DEFAULT_ONLY);
+//        //根据Name排序
+//        Collections.sort(resolveInfos,new ResolveInfo.DisplayNameComparator(packageManager));
+//        if (appInfoList != null){
+//            appInfoList.clear();
+//            for (ResolveInfo resolveInfo : resolveInfos){
+//                String appName = (String) resolveInfo.loadLabel(packageManager);
+//                String appSize = "无法获取";
+//                String packageName = resolveInfo.activityInfo.packageName;
+//                String installTime = "无法获取" ;
+//                //获取版本名
+//                String editon = null;
+//                try {
+//                    editon = packageManager.getPackageInfo(packageName,PackageManager.GET_CONFIGURATIONS).versionName;
+//                } catch (PackageManager.NameNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//                //构建AppInfo对象
+//                AppInfo appInfo = new AppInfo();
+//                appInfo.setAppName(appName);
+//                appInfo.setEdition(editon);
+//                appInfo.setPackageName(packageName);
+//                appInfo.setAppSize(appSize);
+//                appInfo.setInstallTime(installTime);
+//                //添加进列表中
+//                appInfoList.add(appInfo);
+//            }
+//        }
+//    }
+
     //获取所有的App信息
-    private void getAppInfos(){
-        //获取PackagManager对象
-        PackageManager packageManager = this.getPackageManager();
-        Intent mainIntent = new Intent(Intent.ACTION_MAIN,null);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        //通过查询，获取所有ResolveInfo对象
-        List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(mainIntent,PackageManager.MATCH_DEFAULT_ONLY);
-        //根据Name排序
-        Collections.sort(resolveInfos,new ResolveInfo.DisplayNameComparator(packageManager));
-        if (appInfoList != null){
-            appInfoList.clear();
-            for (ResolveInfo resolveInfo : resolveInfos){
-                String appName = (String) resolveInfo.loadLabel(packageManager);
-                String appSize = "无法获取";
-                String packageName = resolveInfo.activityInfo.packageName;
-                String installTime = "无法获取" ;
-                //获取版本名
-                String editon = null;
-                try {
-                    editon = packageManager.getPackageInfo(packageName,PackageManager.GET_CONFIGURATIONS).versionName;
-                } catch (PackageManager.NameNotFoundException e) {
-                    e.printStackTrace();
-                }
-                //构建AppInfo对象
-                AppInfo appInfo = new AppInfo();
-                appInfo.setAppName(appName);
-                appInfo.setEdition(editon);
-                appInfo.setPackageName(packageName);
-                appInfo.setAppSize(appSize);
-                appInfo.setInstallTime(installTime);
-                appInfoList.add(appInfo);
+    public void getAppInfos(){
+        List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
+        for (int i=0;i<packs.size();i++){
+            PackageInfo p = packs.get(i);
+            if (p.versionName == null){
+                continue;
             }
+            String appName = (String) p.applicationInfo.loadLabel(getPackageManager());
+            String appSize = "无法获取";
+            String packageName = p.packageName;
+            String installTime = "无法获取" ;
+            //获取版本名
+            String editon = p.versionName;
+//            try {
+//                editon = packageManager.getPackageInfo(packageName,PackageManager.GET_CONFIGURATIONS).versionName;
+//            } catch (PackageManager.NameNotFoundException e) {
+//                e.printStackTrace();
+//            }
+            //构建AppInfo对象
+            AppInfo appInfo = new AppInfo();
+            appInfo.setAppName(appName);
+            appInfo.setEdition(editon);
+            appInfo.setPackageName(packageName);
+            appInfo.setAppSize(appSize);
+            appInfo.setInstallTime(installTime);
+            //添加进列表中
+            appInfoList.add(appInfo);
         }
     }
 
