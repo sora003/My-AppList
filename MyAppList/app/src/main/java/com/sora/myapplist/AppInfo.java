@@ -24,54 +24,59 @@ public class AppInfo {
 
     public AppInfo(){}
 
-    public String getAppName(){
-        return appName;
-    }
-
-    public void setAppName(String appName){
-        this.appName = appName;
-    }
-
-    public Drawable getAppIcon(){
+    public Drawable getAppIcon() {
         return appIcon;
     }
 
-    public void setAppIcon(Drawable appIcon){
+    public void setAppIcon(Drawable appIcon) {
         this.appIcon = appIcon;
     }
-    public Intent getIntent(){
-        return intent;
+
+    public String getAppName() {
+        return appName;
     }
 
-    public void setIntent(Intent intent){
-        this.intent = intent;
-    }
-    public String getPackageName(){
-        return packageName;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
-    public void setPackageName(String packageName){
-        this.packageName = packageName;
-    }
-    public String getEdition(){
+    public String getEdition() {
         return edition;
     }
 
-    public void setEdition(String edition){
+    public void setEdition(String edition) {
         this.edition = edition;
     }
-    public String getSize(){
-        return size;
-    }
 
-    public void setSize(String size){
-        this.size = size;
-    }
-    public String getInstallTime(){
+    public String getInstallTime() {
         return installTime;
     }
 
-    public void setInstallTime(String installTime){
+    public void setInstallTime(String installTime) {
         this.installTime = installTime;
+    }
+
+    public Intent getIntent() {
+        return intent;
+    }
+
+    public void setIntent(Intent intent) {
+        this.intent = intent;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
     }
 }
