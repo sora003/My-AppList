@@ -14,9 +14,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -97,10 +100,13 @@ public class MainActivity extends AppCompatActivity {
             if (p.versionName == null){
                 continue;
             }
+            String dir = p.applicationInfo.publicSourceDir;
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = new Date(new File(dir).lastModified());
             String appName = (String) p.applicationInfo.loadLabel(getPackageManager());
-            String appSize = "无法获取";
+            String appSize =Long.toString(new File(dir).length());
             String packageName = p.packageName;
-            String installTime = "无法获取" ;
+            String installTime = formatter.format(date);
             //获取版本名
             String editon = p.versionName;
 //            try {
