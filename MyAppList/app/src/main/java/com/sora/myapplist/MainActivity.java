@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listView = null;
     private List<AppInfo> appInfoList = null;
+    private ProgressBar progressBar = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
     public void init(){
         //声明toolbar控件
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        toolbar.setLogo(R.drawable.icon);
         setSupportActionBar(toolbar);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         listView = (ListView) findViewById(R.id.app_listView);
         appInfoList = new ArrayList<AppInfo>();
     }
@@ -138,7 +140,11 @@ public class MainActivity extends AppCompatActivity {
             appInfo.setInstallTime(installTime);
             //添加进列表中
             appInfoList.add(appInfo);
+            int now_progress = (int) ((i+1)/(float)packs.size()*progressBar.getMax());
+            progressBar.setProgress(now_progress);
         }
+        progressBar.setProgress(progressBar.getMax());
+        progressBar.setVisibility(View.GONE);
     }
 
     //三方应用程序过滤器
