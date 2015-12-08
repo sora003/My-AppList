@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -46,9 +47,11 @@ public class MainActivity extends AppCompatActivity {
 //        });
     }
 
+
     public void init(){
-        //工具栏
+        //声明toolbar控件
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        toolbar.setLogo(R.drawable.icon);
         setSupportActionBar(toolbar);
         listView = (ListView) findViewById(R.id.app_listView);
         appInfoList = new ArrayList<AppInfo>();
@@ -93,16 +96,17 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     //获取所有的App信息
-    public void getAppInfos(){
+    private void getAppInfos(){
         //获取已安装的应用程序包
         List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
+        //对获得的应用程序包进行相关操作
         for (int i=0;i<packs.size();i++){
             PackageInfo p = packs.get(i);
             //过滤无版本名的app
             if (p.versionName == null){
                 continue;
             }
-            //过滤非三方应用 程序
+            //过滤非三方应用程序
             if (!filterApp(p.applicationInfo)){
                 continue;
             }
@@ -157,18 +161,18 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        int id = item.getItemId();
+//
+//        //noinspection SimplifiableIfStatement
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
 }
