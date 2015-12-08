@@ -94,12 +94,15 @@ public class MainActivity extends AppCompatActivity {
 
     //获取所有的App信息
     public void getAppInfos(){
+        //获取已安装的应用程序包
         List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
         for (int i=0;i<packs.size();i++){
             PackageInfo p = packs.get(i);
+            //过滤无版本名的app
             if (p.versionName == null){
                 continue;
             }
+            //过滤非三方应用 程序
             if (!filterApp(p.applicationInfo)){
                 continue;
             }
@@ -111,19 +114,19 @@ public class MainActivity extends AppCompatActivity {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             //App创建时对应的文件夹的最近修改时间-最近一次的更新时间
             Date date = new Date(new File(dir).lastModified());
+            //获取App的Label
             String appName = (String) p.applicationInfo.loadLabel(getPackageManager());
+            //获取App的大小
             String appSize =Long.toString(size_long/1024/1024)+"MB";
+            //获取App对应的包名
             String packageName = p.packageName;
+            //获取App的安装时间
             String installTime = formatter.format(date);
             //获取版本名
             String editon = p.versionName;
-//            try {
-//                editon = packageManager.getPackageInfo(packageName,PackageManager.GET_CONFIGURATIONS).versionName;
-//            } catch (PackageManager.NameNotFoundException e) {
-//                e.printStackTrace();
-//            }
             //构建AppInfo对象
             AppInfo appInfo = new AppInfo();
+            //设置App所需输出的各参数值
             appInfo.setAppName(appName);
             appInfo.setEdition(editon);
             appInfo.setPackageName(packageName);
