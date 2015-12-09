@@ -15,6 +15,7 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         init();
         //获取App信息
         getAppInfos();
-        AppInfoAdapter appInfoAdapter = new AppInfoAdapter(this,appInfoList);
+        AppInfoAdapter appInfoAdapter = new AppInfoAdapter(this, appInfoList);
         listView.setAdapter(appInfoAdapter);
 //        设置click事件
 //        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -50,66 +51,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void init(){
+    public void init() {
         //声明toolbar控件
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //监听Toolbar按钮点击事件
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()){
+                    //用户点击了copy功能键
+                    case R.id.action_copy:
+                        Toast.makeText(MainActivity.this,"copy",Toast.LENGTH_SHORT).show();
+                        break;
+                    //用户点击了export功能键
+                    case R.id.action_export:
+                        Toast.makeText(MainActivity.this,"export",Toast.LENGTH_SHORT).show();
+                        break;
+                    //用户点击了imort功能键
+                    case R.id.action_import:
+                        Toast.makeText(MainActivity.this,"import",Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                return true;
+            }
+        });
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         listView = (ListView) findViewById(R.id.app_listView);
         appInfoList = new ArrayList<AppInfo>();
     }
 
 
-    //    //获取所有的App信息
-//    public void getAppInfos(){
-//        //获取PackagManager对象
-//        PackageManager packageManager = this.getPackageManager();
-//        Intent mainIntent = new Intent(Intent.ACTION_MAIN,null);
-//        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-//        //通过查询，获取所有ResolveInfo对象
-//        List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(mainIntent,PackageManager.MATCH_DEFAULT_ONLY);
-//        //根据Name排序
-//        Collections.sort(resolveInfos,new ResolveInfo.DisplayNameComparator(packageManager));
-//        if (appInfoList != null){
-//            appInfoList.clear();
-//            for (ResolveInfo resolveInfo : resolveInfos){
-//                String appName = (String) resolveInfo.loadLabel(packageManager);
-//                String appSize = "无法获取";
-//                String packageName = resolveInfo.activityInfo.packageName;
-//                String installTime = "无法获取" ;
-//                //获取版本名
-//                String editon = null;
-//                try {
-//                    editon = packageManager.getPackageInfo(packageName,PackageManager.GET_CONFIGURATIONS).versionName;
-//                } catch (PackageManager.NameNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//                //构建AppInfo对象
-//                AppInfo appInfo = new AppInfo();
-//                appInfo.setAppName(appName);
-//                appInfo.setEdition(editon);
-//                appInfo.setPackageName(packageName);
-//                appInfo.setAppSize(appSize);
-//                appInfo.setInstallTime(installTime);
-//                //添加进列表中
-//                appInfoList.add(appInfo);
-//            }
-//        }
-//    }
-
     //获取所有的App信息
-    private void getAppInfos(){
+    private void getAppInfos() {
         //获取已安装的应用程序包
         List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
         //对获得的应用程序包进行相关操作
-        for (int i=0;i<packs.size();i++){
+        for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
             //过滤无版本名的app
-            if (p.versionName == null){
+            if (p.versionName == null) {
                 continue;
             }
             //过滤非三方应用程序
-            if (!filterApp(p.applicationInfo)){
+            if (!filterApp(p.applicationInfo)) {
                 continue;
             }
             //获得App创建时对应的文件夹
@@ -123,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
             //获取App的Label
             String appName = (String) p.applicationInfo.loadLabel(getPackageManager());
             //获取App的大小
-            String appSize =Long.toString(size_long/1024/1024)+"MB";
+            String appSize = Long.toString(size_long / 1024 / 1024) + "MB";
             //获取App对应的包名
             String packageName = p.packageName;
             //获取App的安装时间
@@ -140,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             appInfo.setInstallTime(installTime);
             //添加进列表中
             appInfoList.add(appInfo);
-            int now_progress = (int) ((i+1)/(float)packs.size()*progressBar.getMax());
+            int now_progress = (int) ((i + 1) / (float) packs.size() * progressBar.getMax());
             progressBar.setProgress(now_progress);
         }
         progressBar.setProgress(progressBar.getMax());
@@ -148,9 +133,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //三方应用程序过滤器
-    private boolean filterApp(ApplicationInfo applicationInfo){
+    private boolean filterApp(ApplicationInfo applicationInfo) {
         //代表被用户升级过的系统应用
-        if ((applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0){
+        if ((applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
             return true;
         }
         //代表用户应用
@@ -160,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    //显示toolbar内容
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -167,18 +153,4 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
 }
