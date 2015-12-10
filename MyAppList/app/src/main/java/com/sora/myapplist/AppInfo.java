@@ -3,10 +3,12 @@ package com.sora.myapplist;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 
+import java.io.Serializable;
+
 /**
  * Created by Sora on 2015/12/6.
  */
-public class AppInfo {
+public class AppInfo implements Serializable {
     //app名称
     private String appName;
     //
@@ -19,6 +21,18 @@ public class AppInfo {
     private String appSize;
     //安装时间
     private String installTime;
+    //appID
+    private String appid;
+    //序列化需要参数
+    public static final long serialVersionUID = 9527L;
+
+    public String getAppid() {
+        return appid;
+    }
+
+    public void setAppid(String appid) {
+        this.appid = appid;
+    }
 
     public AppInfo(){}
 
@@ -68,5 +82,10 @@ public class AppInfo {
 
     public void setAppSize(String appSize) {
         this.appSize = appSize;
+    }
+
+    @Override
+    public String toString() {
+        return appid + ":   " + appName + "    " + edition + "    " + appSize + "    " + packageName + "    " + installTime+"  \n\r";
     }
 }

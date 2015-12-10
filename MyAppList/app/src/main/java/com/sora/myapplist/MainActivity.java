@@ -16,8 +16,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listView = null;
     private List<AppInfo> appInfoList = null;
+    private List<AppInfo> history_appInfoList = null;
     private ProgressBar progressBar = null;
     private Toolbar toolbar = null;
 
@@ -37,36 +36,29 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //初始化
         init();
-        createAppList();
-        //将list加载到适配器
+        //读取HistoryAppList TODO
+        //显示HistoryAppInfoList UI   TODO
+        //读取当前安装App 构造SystemAppInfoList
+        makeSystemAppInfoList();
+        //合并HistoryAppList和SystemAppInfoList,生成AppInfoList  TODO
+        //将AppInfoList加载到适配器
         AppInfoAdapter appInfoAdapter = new AppInfoAdapter(this, appInfoList);
-        //显示程序列表
+        //显示App列表
         listView.setAdapter(appInfoAdapter);
+        //更新HistoryAPPInfoList 用AppInfoList代替   TODO
+        history_appInfoList = appInfoList;
+        //写入HistoryAppInfoList TODO
+        try {
+            saveHistory_appInfoList();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //AppList排序按钮的监听 TODO
         //监听Toolbar按钮点击事件
-        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+        toolbar.setOnMenuItemClickListener(new toolbar_OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    //用户点击了copy功能键
-                    case R.id.action_copy:
-                        copyFile();
-                        Toast.makeText(MainActivity.this, "已复制到剪贴板", Toast.LENGTH_SHORT).show();
-                        break;
-                    //用户点击了export功能键
-                    case R.id.action_export:
-                        try {
-                            exportFile();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    //用户点击了import功能键
-                    case R.id.action_import:
-                        importFile();
-                        Toast.makeText(MainActivity.this, "已导入程序列表", Toast.LENGTH_SHORT).show();
-                        break;
-                }
-                return true;
+                return super.onMenuItemClick(item);
             }
         });
 //        设置click事件
@@ -76,6 +68,20 @@ public class MainActivity extends AppCompatActivity {
 //
 //            }
 //        });
+
+    }
+
+    private void saveHistory_appInfoList() throws IOException {
+        //判断SDCard是否存在并且可读写
+        Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+        //新建FileService对象
+        FileService service = new FileService(getApplicationContext());
+        //文件名
+        List<AppInfo> fileList = history_appInfoList;
+        if (isExisted){
+            service.saveToData(fileList);
+        }
+        Toast.makeText(MainActivity.this, "已导出程序列表", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -89,55 +95,15 @@ public class MainActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.app_listView);
         //创建List 用于装填App信息
         appInfoList = new ArrayList<AppInfo>();
+        history_appInfoList = new ArrayList<AppInfo>();
     }
 
-    //导入程序列表
-    private void importFile() {
-
-    }
-
-    private String getList(){
-        String app_list = "";
-        for (int i=0;i<appInfoList.size();i++){
-            //获取App的Label
-            String appName = appInfoList.get(i).getAppName();
-            //获取App的大小
-            String appSize = appInfoList.get(i).getAppSize();
-            //获取App对应的包名
-            String packageName = appInfoList.get(i).getPackageName();
-            //获取App的安装时间
-            String installTime = appInfoList.get(i).getInstallTime();
-            //获取版本名
-            String editon = appInfoList.get(i).getEdition();
-            app_list += (i + 1) + ":   " + appName + "    " + editon + "    " + appSize + "    " + packageName + "    " + installTime+"  \n";
-        }
-        return app_list;
-    }
-    //导出程序列表
-    private void exportFile() throws IOException {
-        //判断SDCard是否存在并且可读写
-        Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
-        //新建FileService对象
-        FileService service = new FileService(getApplicationContext());
-        //文件名
-        String filename = "My AppList.txt";
-        String filecontent = getList();
-        if (isExisted){
-            service.saveToSDCard(filename,filecontent);
-        }
-        Toast.makeText(MainActivity.this, "已导出程序列表", Toast.LENGTH_SHORT).show();
-    }
-
-    //将程序列表复制到剪贴板
-    private void copyFile() {
-        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboardManager.setText(getList());
-    }
-
-    //获取AppList信息
-    public void createAppList() {
+    //读取当前系统安装App 构造SystemAppInfoList
+    public void makeSystemAppInfoList() {
         //获取已安装的应用程序包
         List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
+        //非三方程序序列号
+        int app_id = 0;
         //对获得的应用程序包进行相关操作
         for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
@@ -149,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
             if (!filterApp(p.applicationInfo)) {
                 continue;
             }
+            //确认将会添加到程序列表,id+1
+            app_id++;
             //获得App创建时对应的文件夹
             String dir = p.applicationInfo.publicSourceDir;
             //获取App创建时对应文件夹的大小
@@ -168,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
             //获取版本名
             String editon = p.versionName;
             //构建AppInfo对象
+            String appid = Integer.toString(app_id);
             AppInfo appInfo = new AppInfo();
             //设置App所需输出的各参数值
             appInfo.setAppName(appName);
@@ -197,6 +166,52 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    //导入程序列表
+    private void importFile() {
+
+    }
+
+    //导出程序列表
+    private void exportFile() throws IOException {
+        //判断SDCard是否存在并且可读写
+        Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+        //新建FileService对象
+        FileService service = new FileService(getApplicationContext());
+        //文件名
+        List<AppInfo> fileList = appInfoList;
+        if (isExisted){
+            service.saveToSDCard(fileList);
+        }
+        Toast.makeText(MainActivity.this, "已导出程序列表", Toast.LENGTH_SHORT).show();
+    }
+
+    //将AppInfoList复制到剪贴板
+    private void copyFile() {
+        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        clipboardManager.setText(getAppInfoList());
+    }
+
+    //获取AppInfoList的内容
+    private String getAppInfoList(){
+        String app_list = "";
+        for (int i=0;i<appInfoList.size();i++){
+            //获取App的id
+            String appid = appInfoList.get(i).getAppid();
+            //获取App的Label
+            String appName = appInfoList.get(i).getAppName();
+            //获取App的大小
+            String appSize = appInfoList.get(i).getAppSize();
+            //获取App对应的包名
+            String packageName = appInfoList.get(i).getPackageName();
+            //获取App的安装时间
+            String installTime = appInfoList.get(i).getInstallTime();
+            //获取版本名
+            String edition = appInfoList.get(i).getEdition();
+            app_list += appid + ":   " + appName + "    " + edition + "    " + appSize + "    " + packageName + "    " + installTime+"  \n";
+        }
+        return app_list;
+    }
+
     //显示toolbar内容
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -205,4 +220,31 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    //inner class ->监听Toolbar按钮点击事件
+    private class toolbar_OnMenuItemClickListener implements Toolbar.OnMenuItemClickListener {
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()) {
+                //用户点击了copy功能键
+                case R.id.action_copy:
+                    copyFile();
+                    Toast.makeText(MainActivity.this, "已复制到剪贴板", Toast.LENGTH_SHORT).show();
+                    break;
+                //用户点击了export功能键
+                case R.id.action_export:
+                    try {
+                        exportFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                //用户点击了import功能键
+                case R.id.action_import:
+                    importFile();
+                    Toast.makeText(MainActivity.this, "已导入程序列表", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+            return true;
+        }
+    }
 }
