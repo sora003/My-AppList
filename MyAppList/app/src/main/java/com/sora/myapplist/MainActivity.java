@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -25,8 +24,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private ListView listView = null;
-    private List<AppInfo> appInfoList = null;
+    private List<AppInfo> system_appInfoList = null;
     private List<AppInfo> history_appInfoList = null;
+    private List<AppInfo> refresh_appInfoList = null;
     private ProgressBar progressBar = null;
     private Toolbar toolbar = null;
     private AppListService appListService = null;
@@ -37,24 +37,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //初始化
         init();
-        //TODO 读取HistoryAppList
-        //TODO 显示HistoryAppInfoList UI
+        //读取HistoryAppList
+        try {
+            getHistory_AppInfoList();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        //显示HistoryAppInfoList
+        showAppList(history_appInfoList);
         //读取当前安装App 构造SystemAppInfoList
         makeSystemAppInfoList();
-<<<<<<< HEAD
         //TODO 合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
         refresh_appInfoList = appListService.makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
         //显示AppInfoList
         showAppList(refresh_appInfoList);
-=======
-        //TODO 合并HistoryAppList和SystemAppInfoList,生成AppInfoList
-        //将AppInfoList加载到适配器
-        AppInfoAdapter appInfoAdapter = new AppInfoAdapter(this, appInfoList);
-        //显示App列表
-        listView.setAdapter(appInfoAdapter);
-        //TODO  更新HistoryAPPInfoList 用AppInfoList代替 赋值有风险！
-        history_appInfoList = appInfoList;
->>>>>>> parent of d3f6ae6... V0.6.3-α
         //写入HistoryAppInfoList
         try {
             saveHistory_appInfoList();
@@ -79,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-<<<<<<< HEAD
 
 
     //调用ListView 展示AppInfoList
@@ -99,19 +96,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //写入HistoryAppInfoList
-=======
->>>>>>> parent of d3f6ae6... V0.6.3-α
     private void saveHistory_appInfoList() throws IOException {
-        //判断SDCard是否存在并且可读写
-        Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
         //新建FileService对象
         FileService service = new FileService(getApplicationContext());
-        //文件名
-        List<AppInfo> fileList = history_appInfoList;
-        if (isExisted){
-            service.saveToData(fileList);
-        }
-        Toast.makeText(MainActivity.this, "已导出程序列表", Toast.LENGTH_SHORT).show();
+        //更新存储内容
+        List<AppInfo> fileList = refresh_appInfoList;
+        //传递history_appInfoList 存储数据
+        service.saveToData(fileList);
     }
 
 
@@ -124,13 +115,10 @@ public class MainActivity extends AppCompatActivity {
         //创建ListView对象
         listView = (ListView) findViewById(R.id.app_listView);
         //创建List 用于装填App信息
-        appInfoList = new ArrayList<AppInfo>();
+        system_appInfoList = new ArrayList<AppInfo>();
         history_appInfoList = new ArrayList<AppInfo>();
-<<<<<<< HEAD
         refresh_appInfoList = new ArrayList<AppInfo>();
         appListService = new AppListService(getApplicationContext());
-=======
->>>>>>> parent of d3f6ae6... V0.6.3-α
     }
 
     //读取当前系统安装App 构造SystemAppInfoList
@@ -169,23 +157,24 @@ public class MainActivity extends AppCompatActivity {
             //获取App的安装时间
             String installTime = formatter.format(date);
             //获取版本名
-            String editon = p.versionName;
+            String edition = p.versionName;
             //构建AppInfo对象
-            String appid = Integer.toString(app_id);
+            String appID = Integer.toString(app_id);
             AppInfo appInfo = new AppInfo();
             //设置App所需输出的各参数值
             appInfo.setAppName(appName);
-            appInfo.setEdition(editon);
+            appInfo.setEdition(edition);
             appInfo.setPackageName(packageName);
             appInfo.setAppSize(appSize);
             appInfo.setInstallTime(installTime);
+            appInfo.setAppID(appID);
             //添加进列表中
-            appInfoList.add(appInfo);
-            int now_progress = (int) ((i + 1) / (float) packs.size() * progressBar.getMax());
-            progressBar.setProgress(now_progress);
+            system_appInfoList.add(appInfo);
+//            int now_progress = (int) ((i + 1) / (float) packs.size() * progressBar.getMax());
+//            progressBar.setProgress(now_progress);
         }
-        progressBar.setProgress(progressBar.getMax());
-        progressBar.setVisibility(View.GONE);
+//        progressBar.setProgress(progressBar.getMax());
+//        progressBar.setVisibility(View.GONE);
     }
 
     //三方应用程序过滤器
@@ -213,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
         //新建FileService对象
         FileService service = new FileService(getApplicationContext());
         //文件名
-        List<AppInfo> fileList = appInfoList;
+        List<AppInfo> fileList = refresh_appInfoList;
         if (isExisted){
             service.saveToSDCard(fileList);
         }
@@ -223,25 +212,25 @@ public class MainActivity extends AppCompatActivity {
     //将AppInfoList复制到剪贴板
     private void copyFile() {
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboardManager.setText(getAppInfoList());
+        clipboardManager.setText(getrefresh_appInfoList());
     }
 
     //获取AppInfoList的内容
-    private String getAppInfoList(){
+    private String getrefresh_appInfoList(){
         String app_list = "";
-        for (int i=0;i<appInfoList.size();i++){
+        for (int i=0;i< refresh_appInfoList.size();i++){
             //获取App的id
-            String appid = appInfoList.get(i).getAppid();
+            String appid = refresh_appInfoList.get(i).getAppID();
             //获取App的Label
-            String appName = appInfoList.get(i).getAppName();
+            String appName = refresh_appInfoList.get(i).getAppName();
             //获取App的大小
-            String appSize = appInfoList.get(i).getAppSize();
+            String appSize = refresh_appInfoList.get(i).getAppSize();
             //获取App对应的包名
-            String packageName = appInfoList.get(i).getPackageName();
+            String packageName = refresh_appInfoList.get(i).getPackageName();
             //获取App的安装时间
-            String installTime = appInfoList.get(i).getInstallTime();
+            String installTime = refresh_appInfoList.get(i).getInstallTime();
             //获取版本名
-            String edition = appInfoList.get(i).getEdition();
+            String edition = refresh_appInfoList.get(i).getEdition();
             app_list += appid + ":   " + appName + "    " + edition + "    " + appSize + "    " + packageName + "    " + installTime+"  \n";
         }
         return app_list;
