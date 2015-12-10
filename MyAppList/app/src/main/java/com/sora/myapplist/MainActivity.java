@@ -1,5 +1,7 @@
 package com.sora.myapplist;
 
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
@@ -102,7 +104,8 @@ public class MainActivity extends AppCompatActivity {
         //新建FileService对象
         FileService service = new FileService(getApplicationContext());
         //文件名
-        String filename = "My AppList";
+        String filename = "My AppList.txt";
+        String filecontent = "";
         for (int i=0;i<appInfoList.size();i++){
             //获取App的Label
             String appName = appInfoList.get(i).getAppName();
@@ -114,16 +117,17 @@ public class MainActivity extends AppCompatActivity {
             String installTime = appInfoList.get(i).getInstallTime();
             //获取版本名
             String editon = appInfoList.get(i).getEdition();
-            String filecontent = (i + 1) + ":   " + appName + "    " + editon + "    " + appSize + "    " + packageName + "    " + installTime;
-            if (isExisted){
-                service.saveToSDCard(filename,filecontent);
-            }
+            filecontent += (i + 1) + ":   " + appName + "    " + editon + "    " + appSize + "    " + packageName + "    " + installTime+"  \n";
+        }
+        if (isExisted){
+            service.saveToSDCard(filename,filecontent);
         }
         Toast.makeText(getApplicationContext(), "已导出程序列表", Toast.LENGTH_SHORT).show();
     }
 
     //将程序列表复制到剪贴板
     private void copyFile() {
+        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 
     }
 
