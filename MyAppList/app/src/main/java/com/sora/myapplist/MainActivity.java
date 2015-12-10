@@ -3,6 +3,7 @@ package com.sora.myapplist;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -96,18 +97,12 @@ public class MainActivity extends AppCompatActivity {
 
     //导出程序列表
     private void exportFile() throws IOException {
-        //定义导出文件路径
-        File file = MainActivity.this.getExternalFilesDir("My AppList.txt.");
-        //判断文件是否存在
-        //若不存在 则新建文件
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-        //若存在 则...
-        else{
-                Toast.makeText(MainActivity.this, "文件已经存在", Toast.LENGTH_SHORT).show();
-            }
-        FileOutputStream out = new FileOutputStream(file,true);
+        //判断SDCard是否存在并且可读写
+        Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+        //新建FileService对象
+        FileService service = new FileService(getApplicationContext());
+        //文件名
+        String filename = "My AppList";
         for (int i=0;i<appInfoList.size();i++){
             //获取App的Label
             String appName = appInfoList.get(i).getAppName();
@@ -119,13 +114,12 @@ public class MainActivity extends AppCompatActivity {
             String installTime = appInfoList.get(i).getInstallTime();
             //获取版本名
             String editon = appInfoList.get(i).getEdition();
-            StringBuffer string = new StringBuffer();
-            string.append((i+1)+":   "+appName+"    "+editon+"    "+appSize+"    "+packageName+"    "+installTime);
-            out.write(string.toString().getBytes("utf-8"));
+            String filecontent = (i + 1) + ":   " + appName + "    " + editon + "    " + appSize + "    " + packageName + "    " + installTime;
+            if (isExisted){
+                service.saveToSDCard(filename,filecontent);
+            }
         }
-        //写入完毕 关闭out
-        out.close();
-        Toast.makeText(MainActivity.this, "已导出程序列表", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "已导出程序列表", Toast.LENGTH_SHORT).show();
     }
 
     //将程序列表复制到剪贴板
