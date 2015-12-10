@@ -35,10 +35,24 @@ public class FileService {
         objectOutputStream.close();
     }
 
-    public List<AppInfo> listFromFile(String fileName) throws IOException, ClassNotFoundException {
-        FileInputStream fileInputStream = new FileInputStream(fileName);
-        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-        return (List<AppInfo>) objectInputStream.readObject();
+    //读取存放在SD卡根目录下的数据文件 导出history_appInfoList
+    public List<AppInfo> listFromSDCard() throws IOException, ClassNotFoundException {
+        //文件名
+        String filename = "My AppList.txt";
+        //文件上层目录路径
+        String filepath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        //文件路径
+        File file = new File(filepath+"/"+filename);
+        //判断文件是否存在 不存在返回空指针
+        if (!file.exists()){
+            return null;
+        }
+        //若存在读取文件序列 返回list
+        else {
+            FileInputStream fileInputStream = context.openFileInput(filename);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            return (List<AppInfo>) objectInputStream.readObject();
+        }
     }
 
     //传递文件名，数据，实现在data目录下创建文件并将数据保存在该文件中的功能

@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         showAppList(history_appInfoList);
         //读取当前安装App 构造SystemAppInfoList
         makeSystemAppInfoList();
-        //TODO 合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
+        //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
         makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
         //显示AppInfoList
         showAppList(refresh_appInfoList);
@@ -226,8 +226,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //导入程序列表
-    private void importFile() {
-
+    private void importFile() throws IOException, ClassNotFoundException {
+        //新建FileService对象
+        FileService service = new FileService(getApplicationContext());
+        //判断读取列表是否为空指针
+        //若是则返回
+        if (service.listFromData() == null){
+            Toast.makeText(MainActivity.this, "请确认文件格式正确且以文件名My AppList.txt存放在SDCard根目录下", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        //若不是将读取列表赋值给history_appInfoList
+        else {
+            replace(service.listFromData(),history_appInfoList);
+        }
     }
 
     //导出程序列表
@@ -236,18 +247,20 @@ public class MainActivity extends AppCompatActivity {
         Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
         //新建FileService对象
         FileService service = new FileService(getApplicationContext());
-        //文件名
+        //更新后的appInfoList
         List<AppInfo> fileList = refresh_appInfoList;
         if (isExisted){
             service.saveToSDCard(fileList);
         }
-        Toast.makeText(MainActivity.this, "已导出程序列表", Toast.LENGTH_SHORT).show();
+        String filePath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+"History AppList.txt";
+        Toast.makeText(MainActivity.this, "已导出程序列表"+filePath, Toast.LENGTH_SHORT).show();
     }
 
     //将AppInfoList复制到剪贴板
     private void copyFile() {
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         clipboardManager.setText(getrefresh_appInfoList());
+        Toast.makeText(MainActivity.this, "已复制到剪贴板", Toast.LENGTH_SHORT).show();
     }
 
     //获取AppInfoList的内容
@@ -287,7 +300,6 @@ public class MainActivity extends AppCompatActivity {
                 //用户点击了copy功能键
                 case R.id.action_copy:
                     copyFile();
-                    Toast.makeText(MainActivity.this, "已复制到剪贴板", Toast.LENGTH_SHORT).show();
                     break;
                 //用户点击了export功能键
                 case R.id.action_export:
@@ -299,8 +311,14 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 //用户点击了import功能键
                 case R.id.action_import:
-                    importFile();
-                    Toast.makeText(MainActivity.this, "已导入程序列表", Toast.LENGTH_SHORT).show();
+                    try {
+                        importFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(MainActivity.this, "我就不让你导入呆比你拿我怎么办", Toast.LENGTH_SHORT).show();
                     break;
             }
             return true;
