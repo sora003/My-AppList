@@ -1,6 +1,7 @@
 package com.sora.myapplist;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 
 import java.io.Serializable;
 
@@ -21,16 +22,16 @@ public class AppInfo implements Serializable {
     //安装时间
     private String installTime;
     //appID
-    private String appID;
+    private String appid;
     //序列化需要参数
     public static final long serialVersionUID = 9527L;
 
-    public String getAppID() {
-        return appID;
+    public String getAppid() {
+        return appid;
     }
 
-    public void setAppID(String appID) {
-        this.appID = appID;
+    public void setAppid(String appid) {
+        this.appid = appid;
     }
 
     public AppInfo(){}
@@ -85,6 +86,6 @@ public class AppInfo implements Serializable {
 
     @Override
     public String toString() {
-        return appID + ":   " + appName + "    " + edition + "    " + appSize + "    " + packageName + "    " + installTime+"  \n\r";
+        return appid + ":   " + appName + "    " + edition + "    " + appSize + "    " + packageName + "    " + installTime+"  \n\r";
     }
 }
