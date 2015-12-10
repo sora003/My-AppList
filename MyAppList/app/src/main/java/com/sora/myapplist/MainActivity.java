@@ -29,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private List<AppInfo> refresh_appInfoList = null;
     private ProgressBar progressBar = null;
     private Toolbar toolbar = null;
-    private AppListService appListService = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         //读取当前安装App 构造SystemAppInfoList
         makeSystemAppInfoList();
         //TODO 合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
-        refresh_appInfoList = appListService.makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
+        makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
         //显示AppInfoList
         showAppList(refresh_appInfoList);
         //写入HistoryAppInfoList
@@ -77,7 +76,29 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
+    private void makeRefreshAppInfoList(List<AppInfo> history_appInfoList,List<AppInfo> system_appInfoList) {
+        //用history_appInfoList覆盖refresh_appInfoList
+        replace(history_appInfoList,refresh_appInfoList);
+        int id = refresh_appInfoList.size();
+        for (AppInfo system_appInfo :
+                system_appInfoList) {
+            boolean isExisted = false;
+            for (AppInfo refresh_appInfo :
+                    refresh_appInfoList) {
+                //比较系统app和历史app的包名是否一致
+                //TODO 算法可优化
+                if (system_appInfo.getPackageName().equals(refresh_appInfo.getPackageName())){
+                    isExisted = true;
+                }
+            }
+            if (!isExisted){
+                refresh_appInfoList.add(system_appInfo);
+                id++;
+                refresh_appInfoList.get(id-1).setAppID(Integer.toString(id));
+            }
+        }
+    }
 
     //调用ListView 展示AppInfoList
     private void showAppList(List<AppInfo> appInfoList) {
@@ -92,6 +113,21 @@ public class MainActivity extends AppCompatActivity {
         for (AppInfo var :
                 A) {
             B.add(var);
+        }
+    }
+
+    //读取HistoryAppList
+    private void getHistory_AppInfoList() throws IOException, ClassNotFoundException {
+        //新建FileService对象
+        FileService service = new FileService(getApplicationContext());
+        //判断读取列表是否为空指针
+        //若是则返回
+        if (service.listFromData() == null){
+            return;
+        }
+        //若不是将读取列表赋值给history_appInfoList
+        else {
+            replace(service.listFromData(),history_appInfoList);
         }
     }
 
@@ -118,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
         system_appInfoList = new ArrayList<AppInfo>();
         history_appInfoList = new ArrayList<AppInfo>();
         refresh_appInfoList = new ArrayList<AppInfo>();
-        appListService = new AppListService(getApplicationContext());
     }
 
     //读取当前系统安装App 构造SystemAppInfoList
