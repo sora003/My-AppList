@@ -99,9 +99,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //获取要当前App List的内容
-    private String getList(){
-        String out_list = "";
+    //导出程序列表
+    private void exportFile() throws IOException {
+        //判断SDCard是否存在并且可读写
+        Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+        //新建FileService对象
+        FileService service = new FileService(getApplicationContext());
+        //文件名
+        String filename = "My AppList.txt";
+        String filecontent = "";
         for (int i=0;i<appInfoList.size();i++){
             //获取App的Label
             String appName = appInfoList.get(i).getAppName();
@@ -113,21 +119,8 @@ public class MainActivity extends AppCompatActivity {
             String installTime = appInfoList.get(i).getInstallTime();
             //获取版本名
             String editon = appInfoList.get(i).getEdition();
-            out_list += (i + 1) + ":   " + appName + "    " + editon + "    " + appSize + "    " + packageName + "    " + installTime+"  \n";
+            filecontent += (i + 1) + ":   " + appName + "    " + editon + "    " + appSize + "    " + packageName + "    " + installTime+"  \n";
         }
-        return out_list;
-    }
-
-    //导出程序列表
-    private void exportFile() throws IOException {
-        //判断SDCard是否存在并且可读写
-        Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
-        //新建FileService对象
-        FileService service = new FileService(getApplicationContext());
-        //定义文件名
-        String filename = "My AppList.txt";
-        //定义文本内容
-        String filecontent = getList();
         if (isExisted){
             service.saveToSDCard(filename,filecontent);
         }
@@ -137,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
     //将程序列表复制到剪贴板
     private void copyFile() {
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboardManager.setText(getList());
+
     }
 
     //显示toolbar内容
