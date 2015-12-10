@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.support.v7.app.AppCompatActivity;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -16,12 +16,13 @@ import java.util.List;
 /**
  * Created by Sora on 2015/12/10.
  */
-public class AppInfoService extends AppCompatActivity {
+public class AppService extends AppCompatActivity {
 
     private List<AppInfo> appInfoList = null;
+    private ProgressBar progressBar = null;
     Context context;
 
-    public AppInfoService(Context context) {
+    public AppService(Context context) {
         this.context = context;
     }
 
@@ -30,12 +31,5 @@ public class AppInfoService extends AppCompatActivity {
     }
 
     //获取所有的App信息
-    //获取AppList信息
-    public void createAppList(String appName,String appSize,String packageName,String installTime,String editon) {
-        //创建List 用于装填App信息
-        appInfoList = new ArrayList<AppInfo>();
-
-    }
-
 
 }
