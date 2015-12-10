@@ -36,24 +36,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //初始化
         init();
-        //读取HistoryAppList TODO
-        //显示HistoryAppInfoList UI   TODO
+        //TODO 读取HistoryAppList
+        //TODO 显示HistoryAppInfoList UI
         //读取当前安装App 构造SystemAppInfoList
         makeSystemAppInfoList();
-        //合并HistoryAppList和SystemAppInfoList,生成AppInfoList  TODO
+        //TODO 合并HistoryAppList和SystemAppInfoList,生成AppInfoList
         //将AppInfoList加载到适配器
         AppInfoAdapter appInfoAdapter = new AppInfoAdapter(this, appInfoList);
         //显示App列表
         listView.setAdapter(appInfoAdapter);
-        //更新HistoryAPPInfoList 用AppInfoList代替   TODO
+        //TODO  更新HistoryAPPInfoList 用AppInfoList代替 赋值有风险！
         history_appInfoList = appInfoList;
-        //写入HistoryAppInfoList TODO
+        //写入HistoryAppInfoList
         try {
             saveHistory_appInfoList();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //AppList排序按钮的监听 TODO
+        //TODO AppList排序按钮的监听
         //监听Toolbar按钮点击事件
         toolbar.setOnMenuItemClickListener(new toolbar_OnMenuItemClickListener() {
             @Override
