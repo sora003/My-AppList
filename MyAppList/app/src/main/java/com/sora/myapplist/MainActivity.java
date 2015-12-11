@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -278,9 +279,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void  run(){
-            Message message1 = new Message();
+            Message message = new Message();
             //存放数据
-            Bundle bundle1 = new Bundle();
+            Bundle bundle = new Bundle();
             //获取已安装的应用程序包
             List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
             //非三方程序序列号
@@ -328,22 +329,10 @@ public class MainActivity extends AppCompatActivity {
                 appInfo.setAppID(appID);
                 //添加进列表中
                 system_appInfoList.add(appInfo);
-                int i_progress = (int) ((i + 1) / (float) packs.size() * Max_Progress);
-                //传递进度执行情况
-//                bundle1.putString("Progress", Integer.toString(i_progress));
-//                message1.setData(bundle1);
-//                MainActivity.this.app_handler.sendMessage(message1);
             }
-//            Message message2 = new Message();
-//            Bundle bundle2 = new Bundle();
-//            bundle2.putString("Progress_max", "1");
-//            message2.setData(bundle2);
-//            MainActivity.this.app_handler.sendMessage(message2);
-            Message message3 = new Message();
-            Bundle bundle3 = new Bundle();
-            bundle3.putString("showAppList","2");
-            message3.setData(bundle3);
-            MainActivity.this.app_handler.sendMessage(message3);
+            bundle.putString("showAppList","-2");
+            message.setData(bundle);
+            MainActivity.this.app_handler.sendMessage(message);
         }
     }
 
@@ -372,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            bundle.putString("showAppList","1");
+            bundle.putString("showAppList","-1");
             message.setData(bundle);
             MainActivity.this.app_handler.sendMessage(message);
         }
@@ -392,34 +381,22 @@ public class MainActivity extends AppCompatActivity {
             super.handleMessage(msg);
             //更新UI
             String string_showAppList = null;
-            String string_Progress = null;
-            String string_Progress_max = null;
             //更新bundle
             Bundle bundle = msg.getData();
-            //读取进度执行情况 更新ProgressBar
-//            string_Progress = bundle.getString("Progress");
-//            if (string_Progress != null){
-//                progressBar.setProgress(Integer.parseInt(string_Progress));
-//            }
-//            //判断 进度条完成 取消显示进度条
-//            string_Progress_max = bundle.getString("Progress_max");
-//            if (string_Progress_max == "1" )
-//                progressBar.setVisibility(View.GONE);
             //判断是否生成AppList
             string_showAppList = bundle.getString("showAppList");
             switch (string_showAppList){
                 //显示HistoryAppInfoList
-                case "1":
+                case "-1":
                     showAppList(history_appInfoList);
-                    System.out.println("输出的是历史app");
                     break;
                 //显示RefreshAppInfoList
-                case "2":
+                case "-2":
+                    progressBar.setVisibility(View.GONE);
                     //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
                     makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
                     //显示RefreshAppInfoList
                     showAppList(refresh_appInfoList);
-                    System.out.println("输出的是系统app");
                     saveHistory_appInfoList();
                     break;
             }
