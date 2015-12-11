@@ -6,7 +6,9 @@ import java.io.Serializable;
 
 /**
  * Created by Sora on 2015/12/6.
+ *序列化
  */
+
 public class AppInfo implements Serializable {
     //app名称
     private String appName;

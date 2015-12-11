@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
     ////用List:A覆盖List:B
     private void replace(List<AppInfo> A,List<AppInfo> B){
+        //foreach
         for (AppInfo var :
                 A) {
             B.add(var);
@@ -238,6 +239,8 @@ public class MainActivity extends AppCompatActivity {
         //若不是将读取列表赋值给history_appInfoList
         else {
             replace(service.listFromData(),history_appInfoList);
+            makeRefreshAppInfoList(refresh_appInfoList,history_appInfoList);
+            Toast.makeText(MainActivity.this, "导入成功", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -318,7 +321,6 @@ public class MainActivity extends AppCompatActivity {
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
-                    Toast.makeText(MainActivity.this, "我就不让你导入呆比你拿我怎么办", Toast.LENGTH_SHORT).show();
                     break;
             }
             return true;
