@@ -161,9 +161,10 @@ public class MainActivity extends AppCompatActivity {
         Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
         //新建FileService对象
         FileService service = new FileService(getApplicationContext());
-        //判断读取列表是否为空指针
-        //若是则返回
+       //判断SDCard能否被访问
         if (isExisted) {
+            //判断读取列表是否为空指针
+            //若是则返回
             if (service.listFromSDCard() == null) {
                 Toast.makeText(MainActivity.this, "请确认文件格式正确且以文件名My AppList.bak存放在SDCard根目录下", Toast.LENGTH_SHORT).show();
             }
@@ -192,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
         FileService service = new FileService(getApplicationContext());
         //更新后的appInfoList
         List<AppInfo> fileList = refresh_appInfoList;
+        //判断SDCard能否被访问
         if (isExisted) {
             service.saveToSDCard(fileList);
             String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "My AppList.bak";
@@ -342,6 +344,7 @@ public class MainActivity extends AppCompatActivity {
             }
             bundle.putString("showAppList","-2");
             message.setData(bundle);
+            //向Handler发送消息
             MainActivity.this.app_handler.sendMessage(message);
         }
     }
@@ -373,6 +376,7 @@ public class MainActivity extends AppCompatActivity {
             }
             bundle.putString("showAppList","-1");
             message.setData(bundle);
+            //向Handler发送消息
             MainActivity.this.app_handler.sendMessage(message);
         }
     }
@@ -408,11 +412,10 @@ public class MainActivity extends AppCompatActivity {
                     makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
                     //显示RefreshAppInfoList
                     showAppList(refresh_appInfoList);
+                    //保存到data目录下的文件中
                     saveHistory_appInfoList();
                     break;
             }
-
         }
     }
-
 }

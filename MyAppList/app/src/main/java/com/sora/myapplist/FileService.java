@@ -28,10 +28,14 @@ public class FileService {
 
     //传递文件名，数据，实现在SD卡根目录下创建文件并将数据保存在该文件中的功能
     public void saveToSDCard(List<AppInfo> fileList) throws IOException {
+        //文件名
         String filename = "My AppList.bak";
+        //文件路径
         File file = new File(Environment.getExternalStorageDirectory(),filename);
+        //保存数据
         FileOutputStream fileOutputStream = new FileOutputStream(file);
         ObjectOutputStream objectOutputStream= new ObjectOutputStream(fileOutputStream);
+        //以序列化写入
         objectOutputStream.writeObject(fileList);
         objectOutputStream.close();
     }
@@ -51,6 +55,7 @@ public class FileService {
         //若存在读取文件序列 返回list
         else {
             FileInputStream fileInputStream = new FileInputStream(file);
+            //以序列化读入
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             return (List<AppInfo>) objectInputStream.readObject();
         }
@@ -58,9 +63,12 @@ public class FileService {
 
     //传递文件名，数据，实现在data目录下创建文件并将数据保存在该文件中的功能
     public void saveToData(List<AppInfo> fileList) throws IOException {
+        //文件名
         String filename = "History AppList.bak";
+        //保存数据
         FileOutputStream fileOutputStream = context.openFileOutput(filename,Context.MODE_PRIVATE);
         ObjectOutputStream objectOutputStream= new ObjectOutputStream(fileOutputStream);
+        //以序列化写入
         objectOutputStream.writeObject(fileList);
         objectOutputStream.close();
     }
@@ -80,6 +88,7 @@ public class FileService {
         //若存在读取文件序列 返回list
         else {
             FileInputStream fileInputStream = context.openFileInput(filename);
+            //以序列化读入
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             return (List<AppInfo>) objectInputStream.readObject();
         }
