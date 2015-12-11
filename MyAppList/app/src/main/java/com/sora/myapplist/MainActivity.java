@@ -6,10 +6,13 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -20,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Handler;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private List<AppInfo> refresh_appInfoList = null;
     private ProgressBar progressBar = null;
     private Toolbar toolbar = null;
+    private Integer Max_Progress = null;
+    private App_Handler app_handler = null;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,28 +43,29 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //初始化
         init();
+        app_handler = new App_Handler();
+        //TODO 调用线程 Thread_getHistory_AppInfoList
         //读取HistoryAppList
+        Thread_getHistory_AppInfoList getHistory_AppInfoList = new Thread_getHistory_AppInfoList();
+        new Thread(getHistory_AppInfoList).start();
         try {
-            getHistory_AppInfoList();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+            new Thread(getHistory_AppInfoList).join();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //显示HistoryAppInfoList
-        showAppList(history_appInfoList);
+        //TODO 调用线程 Thread_makeSystemAppInfoList
         //读取当前安装App 构造SystemAppInfoList
-        makeSystemAppInfoList();
-        //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
-        makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
-        //显示AppInfoList
-        showAppList(refresh_appInfoList);
-        //写入HistoryAppInfoList
+        Thread_makeSystemAppInfoList makeSystemAppInfoList = new Thread_makeSystemAppInfoList();
+        new Thread(makeSystemAppInfoList).start();
         try {
-            saveHistory_appInfoList();
-        } catch (IOException e) {
+            new Thread(makeSystemAppInfoList).join();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        //TODO 调用线程 Thread_saveHistory_appInfoList
+        //写入HistoryAppInfoList
+        Thread_saveHistory_appInfoList saveHistory_appInfoList = new  Thread_saveHistory_appInfoList();
+        new Thread(saveHistory_appInfoList).start();
         //TODO AppList排序按钮的监听
         //监听Toolbar按钮点击事件
         toolbar.setOnMenuItemClickListener(new toolbar_OnMenuItemClickListener() {
@@ -117,100 +125,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //读取HistoryAppList
-    private void getHistory_AppInfoList() throws IOException, ClassNotFoundException {
-        //新建FileService对象
-        FileService service = new FileService(getApplicationContext());
-        //判断读取列表是否为空指针
-        //若是则返回
-        if (service.listFromData() == null){
-            return;
-        }
-        //若不是将读取列表赋值给history_appInfoList
-        else {
-            replace(service.listFromData(),history_appInfoList);
-        }
-    }
-
-    //写入HistoryAppInfoList
-    private void saveHistory_appInfoList() throws IOException {
-        //新建FileService对象
-        FileService service = new FileService(getApplicationContext());
-        //更新存储内容
-        List<AppInfo> fileList = refresh_appInfoList;
-        //传递history_appInfoList 存储数据
-        service.saveToData(fileList);
-    }
-
-
     public void init() {
         //声明toolbar控件
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //创建进度条对象
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        Max_Progress = progressBar.getMax();
         //创建ListView对象
         listView = (ListView) findViewById(R.id.app_listView);
         //创建List 用于装填App信息
         system_appInfoList = new ArrayList<AppInfo>();
         history_appInfoList = new ArrayList<AppInfo>();
         refresh_appInfoList = new ArrayList<AppInfo>();
-    }
-
-    //读取当前系统安装App 构造SystemAppInfoList
-    public void makeSystemAppInfoList() {
-        //获取已安装的应用程序包
-        List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
-        //非三方程序序列号
-        int app_id = 0;
-        //对获得的应用程序包进行相关操作
-        for (int i = 0; i < packs.size(); i++) {
-            PackageInfo p = packs.get(i);
-            //过滤无版本名的app
-            if (p.versionName == null) {
-                continue;
-            }
-            //过滤非三方应用程序
-            if (!filterApp(p.applicationInfo)) {
-                continue;
-            }
-            //确认将会添加到程序列表,id+1
-            app_id++;
-            //获得App创建时对应的文件夹
-            String dir = p.applicationInfo.publicSourceDir;
-            //获取App创建时对应文件夹的大小
-            Long size_long = new File(dir).length();
-            //定义时间格式
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            //App创建时对应的文件夹的最近修改时间-最近一次的更新时间
-            Date date = new Date(new File(dir).lastModified());
-            //获取App的Label
-            String appName = (String) p.applicationInfo.loadLabel(getPackageManager());
-            //获取App的大小
-            String appSize = Long.toString(size_long / 1024 / 1024) + "MB";
-            //获取App对应的包名
-            String packageName = p.packageName;
-            //获取App的安装时间
-            String installTime = formatter.format(date);
-            //获取版本名
-            String edition = p.versionName;
-            //构建AppInfo对象
-            String appID = Integer.toString(app_id);
-            AppInfo appInfo = new AppInfo();
-            //设置App所需输出的各参数值
-            appInfo.setAppName(appName);
-            appInfo.setEdition(edition);
-            appInfo.setPackageName(packageName);
-            appInfo.setAppSize(appSize);
-            appInfo.setInstallTime(installTime);
-            appInfo.setAppID(appID);
-            //添加进列表中
-            system_appInfoList.add(appInfo);
-//            int now_progress = (int) ((i + 1) / (float) packs.size() * progressBar.getMax());
-//            progressBar.setProgress(now_progress);
-        }
-//        progressBar.setProgress(progressBar.getMax());
-//        progressBar.setVisibility(View.GONE);
     }
 
     //三方应用程序过滤器
@@ -239,7 +166,8 @@ public class MainActivity extends AppCompatActivity {
         //若不是将读取列表赋值给history_appInfoList
         else {
             replace(service.listFromData(),history_appInfoList);
-            makeRefreshAppInfoList(refresh_appInfoList,history_appInfoList);
+            makeRefreshAppInfoList(refresh_appInfoList, history_appInfoList);
+            showAppList(refresh_appInfoList);
             Toast.makeText(MainActivity.this, "导入成功", Toast.LENGTH_SHORT).show();
         }
     }
@@ -326,4 +254,174 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
     }
+
+    //线程 读取当前系统安装App 构造SystemAppInfoList
+    private class Thread_makeSystemAppInfoList implements Runnable{
+
+        @Override
+        public void  run(){
+            Message message1 = new Message();
+            //存放数据
+            Bundle bundle1 = new Bundle();
+            //获取已安装的应用程序包
+            List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
+            //非三方程序序列号
+            int app_id = 0;
+            //对获得的应用程序包进行相关操作
+            for (int i = 0; i < packs.size(); i++) {
+                PackageInfo p = packs.get(i);
+                //过滤无版本名的app
+                if (p.versionName == null) {
+                    continue;
+                }
+                //过滤非三方应用程序
+                if (!filterApp(p.applicationInfo)) {
+                    continue;
+                }
+                //确认将会添加到程序列表,id+1
+                app_id++;
+                //获得App创建时对应的文件夹
+                String dir = p.applicationInfo.publicSourceDir;
+                //获取App创建时对应文件夹的大小
+                Long size_long = new File(dir).length();
+                //定义时间格式
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                //App创建时对应的文件夹的最近修改时间-最近一次的更新时间
+                Date date = new Date(new File(dir).lastModified());
+                //获取App的Label
+                String appName = (String) p.applicationInfo.loadLabel(getPackageManager());
+                //获取App的大小
+                String appSize = Long.toString(size_long / 1024 / 1024) + "MB";
+                //获取App对应的包名
+                String packageName = p.packageName;
+                //获取App的安装时间
+                String installTime = formatter.format(date);
+                //获取版本名
+                String edition = p.versionName;
+                //构建AppInfo对象
+                String appID = Integer.toString(app_id);
+                AppInfo appInfo = new AppInfo();
+                //设置App所需输出的各参数值
+                appInfo.setAppName(appName);
+                appInfo.setEdition(edition);
+                appInfo.setPackageName(packageName);
+                appInfo.setAppSize(appSize);
+                appInfo.setInstallTime(installTime);
+                appInfo.setAppID(appID);
+                //添加进列表中
+                system_appInfoList.add(appInfo);
+                int i_progress = (int) ((i + 1) / (float) packs.size() * Max_Progress);
+                //传递进度执行情况
+//                bundle1.putString("Progress", Integer.toString(i_progress));
+//                message1.setData(bundle1);
+//                MainActivity.this.app_handler.sendMessage(message1);
+            }
+//            Message message2 = new Message();
+//            Bundle bundle2 = new Bundle();
+//            bundle2.putString("Progress_max", "1");
+//            message2.setData(bundle2);
+//            MainActivity.this.app_handler.sendMessage(message2);
+            Message message3 = new Message();
+            Bundle bundle3 = new Bundle();
+            bundle3.putString("showAppList","2");
+            message3.setData(bundle3);
+            MainActivity.this.app_handler.sendMessage(message3);
+        }
+    }
+
+    //线程  读取HistoryAppList
+    private class Thread_getHistory_AppInfoList implements Runnable{
+
+        @Override
+        public void run() {
+            Message message = new Message();
+            //存放数据
+            Bundle bundle = new Bundle();
+            //新建FileService对象
+            FileService service = new FileService(getApplicationContext());
+            //判断读取列表是否为空指针
+            //若是则返回
+            try {
+                if (service.listFromData() == null){
+                    return;
+                }
+                //若不是将读取列表赋值给history_appInfoList
+                else {
+                    replace(service.listFromData(),history_appInfoList);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            bundle.putString("showAppList","1");
+            message.setData(bundle);
+            MainActivity.this.app_handler.sendMessage(message);
+        }
+    }
+
+    //线程 写入HistoryAppInfoList
+    private class Thread_saveHistory_appInfoList implements Runnable {
+
+        @Override
+        public void run() {
+            //新建FileService对象
+            FileService service = new FileService(getApplicationContext());
+            //更新存储内容
+            List<AppInfo> fileList = refresh_appInfoList;
+            //传递history_appInfoList 存储数据
+            try {
+                service.saveToData(fileList);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private class App_Handler extends android.os.Handler {
+        public App_Handler() {
+        }
+
+        public App_Handler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            //更新UI
+            String string_showAppList = null;
+            String string_Progress = null;
+            String string_Progress_max = null;
+            //更新bundle
+            Bundle bundle = msg.getData();
+            //读取进度执行情况 更新ProgressBar
+//            string_Progress = bundle.getString("Progress");
+//            if (string_Progress != null){
+//                progressBar.setProgress(Integer.parseInt(string_Progress));
+//            }
+//            //判断 进度条完成 取消显示进度条
+//            string_Progress_max = bundle.getString("Progress_max");
+//            if (string_Progress_max == "1" )
+//                progressBar.setVisibility(View.GONE);
+            //判断是否生成AppList
+            string_showAppList = bundle.getString("showAppList");
+            switch (string_showAppList){
+                //显示HistoryAppInfoList
+                case "1":
+                    showAppList(history_appInfoList);
+                    break;
+                //显示RefreshAppInfoList
+                case "2":
+                    System.out.println("233333333333333");
+                    //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
+                    makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
+                    //显示RefreshAppInfoList
+                    showAppList(refresh_appInfoList);
+                    break;
+            }
+
+        }
+    }
+
 }
