@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
     private List<AppInfo> sdcard_appInfoList = null;
     private ProgressBar progressBar = null;
     private Toolbar toolbar = null;
-    private Integer Max_Progress = null;
     private App_Handler app_handler = null;
 
 
@@ -43,19 +42,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //初始化
         init();
+        //创建handler对象
         app_handler = new App_Handler();
-        //TODO 调用线程 Thread_getHistory_AppInfoList
+        //调用线程 Thread_getHistory_AppInfoList
         //读取HistoryAppList
         Thread_getHistory_AppInfoList getHistory_AppInfoList = new Thread_getHistory_AppInfoList();
+        //线程开始
         new Thread(getHistory_AppInfoList).start();
+        //TODO 确保在该线程结束之后下个线程才开始执行 实际效果不确定
         try {
             new Thread(getHistory_AppInfoList).join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //TODO 调用线程 Thread_makeSystemAppInfoList
+        //调用线程 Thread_makeSystemAppInfoList
         //读取当前安装App 构造SystemAppInfoList
         Thread_makeSystemAppInfoList makeSystemAppInfoList = new Thread_makeSystemAppInfoList();
+        //线程开始
         new Thread(makeSystemAppInfoList).start();
         //TODO AppList排序按钮的监听
         //监听Toolbar按钮点击事件
@@ -77,11 +80,14 @@ public class MainActivity extends AppCompatActivity {
 
     //合并List:A和List:B,生成RefreshAppInfoList
     private void makeRefreshAppInfoList(List<AppInfo> A,List<AppInfo> B) {
-        //用history_appInfoList覆盖refresh_appInfoList
+        //用List:A覆盖refresh_appInfoList
         replace(A,refresh_appInfoList);
+        //获取refresh_appInfoList(List:A)的size
         int id = refresh_appInfoList.size();
+        //将List:B遍历 判断List:B中的元素在refresh_appInfoList中是否存在
         for (AppInfo b :
                 B) {
+            //判断App是否相同的标识
             boolean isExisted = false;
             for (AppInfo refresh_appInfo :
                     refresh_appInfoList) {
@@ -91,11 +97,14 @@ public class MainActivity extends AppCompatActivity {
                     isExisted = true;
                 }
             }
+            //如果是不相同的App 将新的元素添加进入refresh_appInfoList中
             if (!isExisted){
                 refresh_appInfoList.add(b);
+                //对id进行调整 表示新元素添加在原序列之后
                 id++;
                 refresh_appInfoList.get(id-1).setAppID(Integer.toString(id));
             }
+            //TODO 考虑在乱序情况下需要刷新列表
         }
     }
 
@@ -109,6 +118,8 @@ public class MainActivity extends AppCompatActivity {
 
     ////用List:A覆盖List:B
     private void replace(List<AppInfo> A,List<AppInfo> B){
+        //必须将List:B初始化
+        B = new ArrayList<AppInfo>();
         //foreach
         for (AppInfo var :
                 A) {
@@ -122,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         //创建进度条对象
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        Max_Progress = progressBar.getMax();
         //创建ListView对象
         listView = (ListView) findViewById(R.id.app_listView);
         //创建List 用于装填App信息
@@ -155,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         //若是则返回
         if (isExisted) {
             if (service.listFromSDCard() == null) {
-                Toast.makeText(MainActivity.this, "请确认文件格式正确且以文件名My AppList.txt存放在SDCard根目录下", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "请确认文件格式正确且以文件名My AppList.bak存放在SDCard根目录下", Toast.LENGTH_SHORT).show();
             }
             //若不是将读取列表赋值给history_appInfoList
             else {
@@ -184,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         List<AppInfo> fileList = refresh_appInfoList;
         if (isExisted) {
             service.saveToSDCard(fileList);
-            String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "My AppList.txt";
+            String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "My AppList.bak";
             Toast.makeText(MainActivity.this, "已导出程序列表" + filePath, Toast.LENGTH_SHORT).show();
         }
         else {
@@ -367,8 +377,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    //Handler 类
     private class App_Handler extends android.os.Handler {
+
         public App_Handler() {
         }
 
