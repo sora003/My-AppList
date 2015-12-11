@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -23,7 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Handler;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private List<AppInfo> system_appInfoList = null;
     private List<AppInfo> history_appInfoList = null;
     private List<AppInfo> refresh_appInfoList = null;
+    private List<AppInfo> sdcard_appInfoList = null;
     private ProgressBar progressBar = null;
     private Toolbar toolbar = null;
     private Integer Max_Progress = null;
@@ -57,15 +56,6 @@ public class MainActivity extends AppCompatActivity {
         //读取当前安装App 构造SystemAppInfoList
         Thread_makeSystemAppInfoList makeSystemAppInfoList = new Thread_makeSystemAppInfoList();
         new Thread(makeSystemAppInfoList).start();
-        try {
-            new Thread(makeSystemAppInfoList).join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        //TODO 调用线程 Thread_saveHistory_appInfoList
-        //写入HistoryAppInfoList
-        Thread_saveHistory_appInfoList saveHistory_appInfoList = new  Thread_saveHistory_appInfoList();
-        new Thread(saveHistory_appInfoList).start();
         //TODO AppList排序按钮的监听
         //监听Toolbar按钮点击事件
         toolbar.setOnMenuItemClickListener(new toolbar_OnMenuItemClickListener() {
@@ -84,24 +74,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
-    private void makeRefreshAppInfoList(List<AppInfo> history_appInfoList,List<AppInfo> system_appInfoList) {
+    //合并List:A和List:B,生成RefreshAppInfoList
+    private void makeRefreshAppInfoList(List<AppInfo> A,List<AppInfo> B) {
         //用history_appInfoList覆盖refresh_appInfoList
-        replace(history_appInfoList,refresh_appInfoList);
+        replace(A,refresh_appInfoList);
         int id = refresh_appInfoList.size();
-        for (AppInfo system_appInfo :
-                system_appInfoList) {
+        for (AppInfo b :
+                B) {
             boolean isExisted = false;
             for (AppInfo refresh_appInfo :
                     refresh_appInfoList) {
                 //比较系统app和历史app的包名是否一致
                 //TODO 算法可优化
-                if (system_appInfo.getPackageName().equals(refresh_appInfo.getPackageName())){
+                if (b.getPackageName().equals(refresh_appInfo.getPackageName())){
                     isExisted = true;
                 }
             }
             if (!isExisted){
-                refresh_appInfoList.add(system_appInfo);
+                refresh_appInfoList.add(b);
                 id++;
                 refresh_appInfoList.get(id-1).setAppID(Integer.toString(id));
             }
@@ -138,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
         system_appInfoList = new ArrayList<AppInfo>();
         history_appInfoList = new ArrayList<AppInfo>();
         refresh_appInfoList = new ArrayList<AppInfo>();
+        sdcard_appInfoList = new ArrayList<AppInfo>();
     }
 
     //三方应用程序过滤器
@@ -155,21 +146,31 @@ public class MainActivity extends AppCompatActivity {
 
     //导入程序列表
     private void importFile() throws IOException, ClassNotFoundException {
+        //判断SDCard是否存在并且可读写
+        Boolean isExisted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
         //新建FileService对象
         FileService service = new FileService(getApplicationContext());
         //判断读取列表是否为空指针
         //若是则返回
-        if (service.listFromData() == null){
-            Toast.makeText(MainActivity.this, "请确认文件格式正确且以文件名My AppList.txt存放在SDCard根目录下", Toast.LENGTH_SHORT).show();
-            return;
+        if (isExisted) {
+            if (service.listFromSDCard() == null) {
+                Toast.makeText(MainActivity.this, "请确认文件格式正确且以文件名My AppList.txt存放在SDCard根目录下", Toast.LENGTH_SHORT).show();
+            }
+            //若不是将读取列表赋值给history_appInfoList
+            else {
+                replace(service.listFromSDCard(), sdcard_appInfoList);
+                makeRefreshAppInfoList(refresh_appInfoList, sdcard_appInfoList);
+                replace(refresh_appInfoList, history_appInfoList);
+                showAppList(refresh_appInfoList);
+                Toast.makeText(MainActivity.this, "导入成功", Toast.LENGTH_SHORT).show();
+                //TODO 保存history_appInfoList
+                saveHistory_appInfoList();
+            }
         }
-        //若不是将读取列表赋值给history_appInfoList
-        else {
-            replace(service.listFromData(),history_appInfoList);
-            makeRefreshAppInfoList(refresh_appInfoList, history_appInfoList);
-            showAppList(refresh_appInfoList);
-            Toast.makeText(MainActivity.this, "导入成功", Toast.LENGTH_SHORT).show();
+        else{
+            Toast.makeText(MainActivity.this, "无法访问SDCard", Toast.LENGTH_SHORT).show();
         }
+
     }
 
     //导出程序列表
@@ -180,22 +181,25 @@ public class MainActivity extends AppCompatActivity {
         FileService service = new FileService(getApplicationContext());
         //更新后的appInfoList
         List<AppInfo> fileList = refresh_appInfoList;
-        if (isExisted){
+        if (isExisted) {
             service.saveToSDCard(fileList);
+            String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "My AppList.txt";
+            Toast.makeText(MainActivity.this, "已导出程序列表" + filePath, Toast.LENGTH_SHORT).show();
         }
-        String filePath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+"History AppList.txt";
-        Toast.makeText(MainActivity.this, "已导出程序列表"+filePath, Toast.LENGTH_SHORT).show();
+        else {
+            Toast.makeText(MainActivity.this, "无法访问SDCard", Toast.LENGTH_SHORT).show();
+        }
     }
 
     //将AppInfoList复制到剪贴板
     private void copyFile() {
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboardManager.setText(getrefresh_appInfoList());
+        clipboardManager.setText(getRefresh_appInfoList());
         Toast.makeText(MainActivity.this, "已复制到剪贴板", Toast.LENGTH_SHORT).show();
     }
 
     //获取AppInfoList的内容
-    private String getrefresh_appInfoList(){
+    private String getRefresh_appInfoList(){
         String app_list = "";
         for (int i=0;i< refresh_appInfoList.size();i++){
             //获取App的id
@@ -252,6 +256,20 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
             return true;
+        }
+    }
+
+    //写入HistoryAppInfoList
+    private void saveHistory_appInfoList(){
+        //新建FileService对象
+        FileService service = new FileService(getApplicationContext());
+        //更新存储内容
+        List<AppInfo> fileList = refresh_appInfoList;
+        //传递history_appInfoList 存储数据
+        try {
+            service.saveToData(fileList);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -360,23 +378,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //线程 写入HistoryAppInfoList
-    private class Thread_saveHistory_appInfoList implements Runnable {
-
-        @Override
-        public void run() {
-            //新建FileService对象
-            FileService service = new FileService(getApplicationContext());
-            //更新存储内容
-            List<AppInfo> fileList = refresh_appInfoList;
-            //传递history_appInfoList 存储数据
-            try {
-                service.saveToData(fileList);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     private class App_Handler extends android.os.Handler {
         public App_Handler() {
@@ -410,14 +411,16 @@ public class MainActivity extends AppCompatActivity {
                 //显示HistoryAppInfoList
                 case "1":
                     showAppList(history_appInfoList);
+                    System.out.println("输出的是历史app");
                     break;
                 //显示RefreshAppInfoList
                 case "2":
-                    System.out.println("233333333333333");
                     //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
                     makeRefreshAppInfoList(history_appInfoList, system_appInfoList);
                     //显示RefreshAppInfoList
                     showAppList(refresh_appInfoList);
+                    System.out.println("输出的是系统app");
+                    saveHistory_appInfoList();
                     break;
             }
 

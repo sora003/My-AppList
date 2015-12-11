@@ -2,6 +2,7 @@ package com.sora.myapplist;
 
 import android.content.Context;
 import android.os.Environment;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +50,7 @@ public class FileService {
         }
         //若存在读取文件序列 返回list
         else {
-            FileInputStream fileInputStream = context.openFileInput(filename);
+            FileInputStream fileInputStream = new FileInputStream(file);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             return (List<AppInfo>) objectInputStream.readObject();
         }
