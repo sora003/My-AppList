@@ -118,8 +118,6 @@ public class MainActivity extends AppCompatActivity {
 
     ////用List:A覆盖List:B
     private void replace(List<AppInfo> A,List<AppInfo> B){
-        //必须将List:B初始化
-        B = new ArrayList<AppInfo>();
         //foreach
         for (AppInfo var :
                 A) {
@@ -172,9 +170,10 @@ public class MainActivity extends AppCompatActivity {
             else {
                 //将SD卡上的数据导入sdcard_appInfoList
                 replace(service.listFromSDCard(), sdcard_appInfoList);
-//                for (int i=0;i<sdcard_appInfoList.size();i++){
-//                    sdcard_appInfoList.get(i).toString();
-//                }
+                System.out.println("sdcard_appInfoList: "+sdcard_appInfoList.size());
+                for (int i=0;i<sdcard_appInfoList.size();i++){
+                    System.out.println("00000" + sdcard_appInfoList.get(i).toString());
+                }
                 //检索sdcard_appInfoList 将其并入refresh_appInfoList
                 makeRefreshAppInfoList(sdcard_appInfoList);
                 showAppList(refresh_appInfoList);
@@ -410,6 +409,7 @@ public class MainActivity extends AppCompatActivity {
             switch (string_showAppList){
                 //显示HistoryAppInfoList
                 case "1":
+                    //TODO 如果线程顺序错误 未重新定义refresh_appInfoList 会产生bug
                     replace(history_appInfoList, refresh_appInfoList);
                     showAppList(refresh_appInfoList);
                     //说明history_appInfoList已显示

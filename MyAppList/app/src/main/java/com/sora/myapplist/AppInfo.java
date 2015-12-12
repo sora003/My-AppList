@@ -87,6 +87,6 @@ public class AppInfo implements Serializable {
 
     @Override
     public String toString() {
-        return appID + ":   " + appName + "    " + edition + "    " + appSize + "    " + packageName + "    " + installTime+"  \n\r";
+        return appID + ":   " + appName + "    " + edition + "    " + appSize + "    " + packageName + "    " + installTime;
     }
 }
