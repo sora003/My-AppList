@@ -170,12 +170,9 @@ public class MainActivity extends AppCompatActivity {
             else {
                 //将SD卡上的数据导入sdcard_appInfoList
                 replace(service.listFromSDCard(), sdcard_appInfoList);
-                System.out.println("sdcard_appInfoList: "+sdcard_appInfoList.size());
-                for (int i=0;i<sdcard_appInfoList.size();i++){
-                    System.out.println("00000" + sdcard_appInfoList.get(i).toString());
-                }
                 //检索sdcard_appInfoList 将其并入refresh_appInfoList
                 makeRefreshAppInfoList(sdcard_appInfoList);
+                //刷新当前页面
                 showAppList(refresh_appInfoList);
                 Toast.makeText(MainActivity.this, "导入成功", Toast.LENGTH_SHORT).show();
                 saveHistory_appInfoList();
@@ -346,6 +343,13 @@ public class MainActivity extends AppCompatActivity {
             }
             bundle.putString("showAppList", "2");
             message.setData(bundle);
+            //延迟3秒 确保Thread_getHistory_AppInfoList先执行完毕
+            //TODO 可以等待到Thread_getHistory_AppInfoList执行完毕
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             //向Handler发送消息
             //直到历史数据显示出 才发送message
 //            while (!ishistoryed){
