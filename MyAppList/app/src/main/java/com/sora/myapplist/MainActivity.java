@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -376,7 +377,17 @@ public class MainActivity extends AppCompatActivity {
 
     //TODO 根据sorted确定排序方式
     private void sortAppList(String sorted) {
-
+        switch (sorted){
+            case "应用大小":
+                Collections.sort(refresh_appInfoList, new AppSizeComparator());
+                break;
+            case "安装时间":
+                Collections.sort(refresh_appInfoList, new InstallTimeComparator());
+                break;
+            case "应用名称":
+                Collections.sort(refresh_appInfoList, new AppNameComparator());
+                break;
+        }
     }
 
     //写入HistoryAppInfoList
@@ -428,8 +439,9 @@ public class MainActivity extends AppCompatActivity {
                 Date date = new Date(new File(dir).lastModified());
                 //获取App的Label
                 String appName = (String) p.applicationInfo.loadLabel(getPackageManager());
-                //获取App的大小
-                String appSize = Long.toString(size_long / 1024 / 1024) + "MB";
+                //获取App的大小,小数点保留一位
+                Double exact_AppSize = (double)(Math.round((size_long/(double)(1024*1024))*10)/10.0)  ;
+                String appSize = Double.toString(exact_AppSize) + "MB";
                 //获取App对应的包名
                 String packageName = p.packageName;
                 //获取App的安装时间
@@ -444,6 +456,7 @@ public class MainActivity extends AppCompatActivity {
                 appInfo.setEdition(edition);
                 appInfo.setPackageName(packageName);
                 appInfo.setAppSize(appSize);
+                appInfo.setExact_AppSize(exact_AppSize);
                 appInfo.setInstallTime(installTime);
                 appInfo.setAppID(appID);
                 //添加进列表中
@@ -459,10 +472,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             //向Handler发送消息
-            //直到历史数据显示出 才发送message
-//            while (!ishistoryed){
-//
-//            }
             MainActivity.this.app_handler.sendMessage(message);
         }
     }

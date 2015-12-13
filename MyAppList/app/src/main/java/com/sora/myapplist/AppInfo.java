@@ -20,6 +20,8 @@ public class AppInfo implements Serializable {
     private String edition;
     //大小
     private String appSize;
+    //具体大小值
+    private Double exact_AppSize;
     //安装时间
     private String installTime;
     //appID
@@ -83,6 +85,14 @@ public class AppInfo implements Serializable {
 
     public void setAppSize(String appSize) {
         this.appSize = appSize;
+    }
+
+    public Double getExact_AppSize() {
+        return exact_AppSize;
+    }
+
+    public void setExact_AppSize(Double exact_AppSize) {
+        this.exact_AppSize = exact_AppSize;
     }
 
     @Override
