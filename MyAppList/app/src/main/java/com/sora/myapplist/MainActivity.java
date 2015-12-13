@@ -380,12 +380,27 @@ public class MainActivity extends AppCompatActivity {
         switch (sorted){
             case "应用大小":
                 Collections.sort(refresh_appInfoList, new AppSizeComparator());
+                int id = 1;
+                for (int i=0;i<refresh_appInfoList.size();i++){
+                    refresh_appInfoList.get(i).setAppID(Integer.toString(id));
+                    id++;
+                }
                 break;
             case "安装时间":
                 Collections.sort(refresh_appInfoList, new InstallTimeComparator());
+                id = 1;
+                for (int i=0;i<refresh_appInfoList.size();i++){
+                    refresh_appInfoList.get(i).setAppID(Integer.toString(id));
+                    id++;
+                }
                 break;
             case "应用名称":
                 Collections.sort(refresh_appInfoList, new AppNameComparator());
+                id = 1;
+                for (int i=0;i<refresh_appInfoList.size();i++){
+                    refresh_appInfoList.get(i).setAppID(Integer.toString(id));
+                    id++;
+                }
                 break;
         }
     }
