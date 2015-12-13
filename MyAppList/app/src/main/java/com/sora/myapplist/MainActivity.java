@@ -13,8 +13,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.io.File;
@@ -24,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-//备份
+
 public class MainActivity extends AppCompatActivity {
 
     private ListView listView = null;
@@ -35,7 +38,17 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar = null;
     private Toolbar toolbar = null;
     private App_Handler app_handler = null;
-//    private Boolean ishistoryed = false;
+    private List<String> sort1_List = null;
+    private List<String> sort2_List = null;
+    private ArrayAdapter<String> sort1_adapter = null;
+    private ArrayAdapter<String> sort2_adapter = null;
+    private Spinner sort1_spinner;
+    private Spinner sort2_spinner;
+    //记录refresh_appInfoList当前的正逆序排列情况
+    Boolean reverse_flag = null;
+    //记录sort2_spinner的选择情况
+    //true表示逆序 false表示正序
+    private Boolean reverse = false;
 
 
     @Override
@@ -51,18 +64,24 @@ public class MainActivity extends AppCompatActivity {
         Thread_getHistory_AppInfoList getHistory_AppInfoList = new Thread_getHistory_AppInfoList();
         //线程开始
         new Thread(getHistory_AppInfoList).start();
-        //TODO 确保在该线程结束之后下个线程才开始执行 实际效果不确定
-        try {
-            new Thread(getHistory_AppInfoList).join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         //调用线程 Thread_makeSystemAppInfoList
         //读取当前安装App 构造SystemAppInfoList
         Thread_makeSystemAppInfoList makeSystemAppInfoList = new Thread_makeSystemAppInfoList();
         //线程开始
         new Thread(makeSystemAppInfoList).start();
         //TODO AppList排序按钮的监听
+        sort1_spinner.setOnItemSelectedListener(new spinner1_OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                super.onItemSelected(parent, view, position, id);
+            }
+        });
+        sort2_spinner.setOnItemSelectedListener(new spinner2_OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                super.onItemSelected(parent, view, position, id);
+            }
+        });
         //监听Toolbar按钮点击事件
         toolbar.setOnMenuItemClickListener(new toolbar_OnMenuItemClickListener() {
             @Override
@@ -79,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
     }
+
+
 
     //合并List:A和RefreshAppInfoList,生成新的RefreshAppInfoList
     private void makeRefreshAppInfoList(List<AppInfo> A) {
@@ -138,7 +159,33 @@ public class MainActivity extends AppCompatActivity {
         history_appInfoList = new ArrayList<AppInfo>();
         refresh_appInfoList = new ArrayList<AppInfo>();
         sdcard_appInfoList = new ArrayList<AppInfo>();
+        //两种排序方式的下拉列表初始化
+        sort1_spinner = (Spinner) findViewById(R.id.spinner_sort1);
+        sort2_spinner = (Spinner) findViewById(R.id.spinner_sort2);
+        sort1_List = new ArrayList<String>();
+        sort1_List.add("应用大小");
+        sort1_List.add("安装时间");
+        sort1_List.add("应用名称");
+        sort2_List = new ArrayList<String>();
+        sort2_List.add("正序");
+        sort2_List.add("倒序");
+        //新建ArrayAdapter
+        sort1_adapter = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_spinner_item,sort1_List);
+        //adapter设置下拉列表
+        sort1_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //spinner加载适配器
+        sort1_spinner.setAdapter(sort1_adapter);
+        //新建ArrayAdapter
+        sort2_adapter = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_spinner_item,sort2_List);
+        //adapter设置下拉列表
+        sort2_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //spinner加载适配器
+        sort2_spinner.setAdapter(sort2_adapter);
+        //reverse初始值为false 表示默认正序排列
+        reverse = false;
+        reverse_flag = false;
     }
+
 
     //三方应用程序过滤器
     private boolean filterApp(ApplicationInfo applicationInfo) {
@@ -269,6 +316,67 @@ public class MainActivity extends AppCompatActivity {
             }
             return true;
         }
+    }
+
+    //inner class ->监听Spinner按钮点击事件
+    private class spinner1_OnItemSelectedListener implements android.widget.AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            String sorted = sort1_adapter.getItem(position);
+            sortAppList(sorted);
+            sortAppListByReverse(reverse);
+            showAppList(refresh_appInfoList);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    }
+    //inner class ->监听Spinner按钮点击事件
+    private class spinner2_OnItemSelectedListener implements AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            String  sorted =sort2_adapter.getItem(position);
+            switch (sorted){
+                case "正序":
+                    reverse = false;
+                    break;
+                case "倒序":
+                    reverse = true;
+                    break;
+            }
+            sortAppListByReverse(reverse);
+            showAppList(refresh_appInfoList);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    }
+
+    ////TODO 根据reverse确定排序方式
+    private void sortAppListByReverse(Boolean reverse) {
+        if ((!(reverse && reverse_flag))&&(reverse || reverse_flag)) {
+            List<AppInfo> temporary_appInfoList = new ArrayList<AppInfo>();
+            for (int i = refresh_appInfoList.size() - 1; i >= 0; i--) {
+                temporary_appInfoList.add(refresh_appInfoList.get(i));
+            }
+            refresh_appInfoList = new ArrayList<AppInfo>();
+            replace(temporary_appInfoList, refresh_appInfoList);
+            reverse_flag = !reverse_flag;
+            int id = 1;
+            for (int i=0;i<refresh_appInfoList.size();i++){
+                refresh_appInfoList.get(i).setAppID(Integer.toString(id));
+                id++;
+            }
+        }
+    }
+
+    //TODO 根据sorted确定排序方式
+    private void sortAppList(String sorted) {
+
     }
 
     //写入HistoryAppInfoList
@@ -434,4 +542,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 }

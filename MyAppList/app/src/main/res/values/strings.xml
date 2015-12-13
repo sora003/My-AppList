@@ -8,4 +8,5 @@
     <string name="text_packageName">com.dashabi.dashabi.dashabi.dashabi.dashabi.dashabi.dashabi.dashabi.caoshushu</string>
     <string name="text_installTime">2015年11月12日</string>
     <string name="action_copy">copy</string>
+    <string name="sort_way">排序方式:</string>
 </resources>
