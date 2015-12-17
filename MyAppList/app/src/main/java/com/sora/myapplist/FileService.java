@@ -29,7 +29,7 @@ public class FileService {
     //传递文件名，数据，实现在SD卡根目录下创建文件并将数据保存在该文件中的功能
     public void saveToSDCard(List<AppInfo> fileList) throws IOException {
         //文件名
-        String filename = "My AppList.txt";
+        String filename = "My AppList.bak";
         //文件路径
         File file = new File(Environment.getExternalStorageDirectory(),filename);
         //保存数据
@@ -43,7 +43,7 @@ public class FileService {
     //读取存放在SD卡根目录下的数据文件 导出history_appInfoList
     public List<AppInfo> listFromSDCard() throws IOException, ClassNotFoundException {
         //文件名
-        String filename = "My AppList.txt";
+        String filename = "My AppList.bak";
         //文件上层目录路径
         String filepath = Environment.getExternalStorageDirectory().getAbsolutePath();
         //文件路径
@@ -64,7 +64,7 @@ public class FileService {
     //传递文件名，数据，实现在data目录下创建文件并将数据保存在该文件中的功能
     public void saveToData(List<AppInfo> fileList) throws IOException {
         //文件名
-        String filename = "History AppList.txt";
+        String filename = "History AppList.bak";
         //保存数据
         FileOutputStream fileOutputStream = context.openFileOutput(filename,Context.MODE_PRIVATE);
         ObjectOutputStream objectOutputStream= new ObjectOutputStream(fileOutputStream);
@@ -76,7 +76,7 @@ public class FileService {
     //读取存放在data目录下的数据文件 导出history_appInfoList
     public List<AppInfo> listFromData() throws IOException, ClassNotFoundException {
         //文件名
-        String filename = "History AppList.txt";
+        String filename = "History AppList.bak";
         //文件上层目录路径
         String filepath = context.getFilesDir().getAbsolutePath();
         //文件路径

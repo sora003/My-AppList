@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     private ListView listView = null;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         Thread_makeSystemAppInfoList makeSystemAppInfoList = new Thread_makeSystemAppInfoList();
         //线程开始
         new Thread(makeSystemAppInfoList).start();
-        //TODO AppList排序按钮的监听
+        //AppList排序按钮的监听
         sort1_spinner.setOnItemSelectedListener(new spinner1_OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -124,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
                 id++;
                 refresh_appInfoList.get(id-1).setAppID(Integer.toString(id));
             }
-            //TODO 考虑在乱序情况下需要刷新列表
         }
     }
 
@@ -162,9 +162,9 @@ public class MainActivity extends AppCompatActivity {
         sort1_spinner = (Spinner) findViewById(R.id.spinner_sort1);
         sort2_spinner = (Spinner) findViewById(R.id.spinner_sort2);
         sort1_List = new ArrayList<String>();
-        sort1_List.add("应用大小");
-        sort1_List.add("安装时间");
         sort1_List.add("应用名称");
+        sort1_List.add("应用大小");
+        sort1_List.add("更新时间");
         sort2_List = new ArrayList<String>();
         sort2_List.add("正序");
         sort2_List.add("倒序");
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
             //判断读取列表是否为空指针
             //若是则返回
             if (service.listFromSDCard() == null) {
-                Toast.makeText(MainActivity.this, "请确认文件格式正确且以文件名My AppList.txt存放在SDCard根目录下", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "请确认文件格式正确且以文件名My AppList.bak存放在SDCard根目录下", Toast.LENGTH_SHORT).show();
             }
             //若非空将读取列表赋值给history_appInfoList
             else {
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         //判断SDCard能否被访问
         if (isExisted) {
             service.saveToSDCard(fileList);
-            String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "My AppList.txt";
+            String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "My AppList.bak";
             Toast.makeText(MainActivity.this, "已导出程序列表" + filePath, Toast.LENGTH_SHORT).show();
         }
         else {
@@ -323,7 +323,18 @@ public class MainActivity extends AppCompatActivity {
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             String sorted = sort1_adapter.getItem(position);
             sortAppList(sorted);
-            sortAppListByReverse(reverse);
+            //判断是否反转
+            if (reverse){
+                List<AppInfo> temporary_appInfoList = new ArrayList<AppInfo>();
+                for (int i = refresh_appInfoList.size() - 1; i >= 0; i--) {
+                    temporary_appInfoList.add(refresh_appInfoList.get(i));
+                }
+                refresh_appInfoList = new ArrayList<AppInfo>();
+                replace(temporary_appInfoList, refresh_appInfoList);
+                for (int i=0;i<refresh_appInfoList.size();i++){
+                    refresh_appInfoList.get(i).setAppID(Integer.toString(i+1));
+                }
+            }
             showAppList(refresh_appInfoList);
         }
 
@@ -355,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    ////TODO 根据reverse确定排序方式
+    //根据reverse确定排序方式
     private void sortAppListByReverse(Boolean reverse) {
         if ((!(reverse && reverse_flag))&&(reverse || reverse_flag)) {
             List<AppInfo> temporary_appInfoList = new ArrayList<AppInfo>();
@@ -371,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //TODO 根据sorted确定排序方式
+    //根据sorted确定排序方式
     private void sortAppList(String sorted) {
         switch (sorted){
             case "应用大小":
@@ -380,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                     refresh_appInfoList.get(i).setAppID(Integer.toString(i+1));
                 }
                 break;
-            case "安装时间":
+            case "更新时间":
                 Collections.sort(refresh_appInfoList, new InstallTimeComparator());
                 for (int i=0;i<refresh_appInfoList.size();i++){
                     refresh_appInfoList.get(i).setAppID(Integer.toString(i+1));
@@ -537,6 +548,7 @@ public class MainActivity extends AppCompatActivity {
                 case "1":
                     //TODO 如果线程顺序错误 未重新定义refresh_appInfoList 会产生bug
                     replace(history_appInfoList, refresh_appInfoList);
+                    //显示RefreshAppInfoList
                     showAppList(refresh_appInfoList);
                     //说明history_appInfoList已显示
 //                    ishistoryed = true;
@@ -548,6 +560,11 @@ public class MainActivity extends AppCompatActivity {
                     progressBar.setVisibility(View.GONE);
                     //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
                     makeRefreshAppInfoList(system_appInfoList);
+                    //按默认顺序排布ListView
+                    Collections.sort(refresh_appInfoList, new AppNameComparator());
+                    for (int i=0;i<refresh_appInfoList.size();i++){
+                        refresh_appInfoList.get(i).setAppID(Integer.toString(i+1));
+                    }
                     //显示RefreshAppInfoList
                     showAppList(refresh_appInfoList);
                     //保存到data目录下的文件中

@@ -17,4 +17,3 @@ public class AppNameComparator implements Comparator<AppInfo> {
         return cn1.compareTo(cn2);
     }
 }
-s
