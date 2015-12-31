@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     //记录sort2_spinner的选择情况
     //true表示逆序 false表示正序
     private Boolean reverse = false;
+    //计数器
+    CountDownLatch countDownLatch = new CountDownLatch(1);
 
 
     @Override
@@ -480,13 +483,6 @@ public class MainActivity extends AppCompatActivity {
             }
             bundle.putString("showAppList", "2");
             message.setData(bundle);
-            //延迟3秒 确保Thread_getHistory_AppInfoList先执行完毕
-            //TODO 可以等待到Thread_getHistory_AppInfoList执行完毕
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             //向Handler发送消息
             MainActivity.this.app_handler.sendMessage(message);
         }
@@ -553,9 +549,17 @@ public class MainActivity extends AppCompatActivity {
                     //说明history_appInfoList已显示
 //                    ishistoryed = true;
                     System.out.println("输出的是历史App");
+                    //减少计数
+                    countDownLatch.countDown();
                     break;
                 //显示RefreshAppInfoList
                 case "2":
+                    //确保Thread_getHistory_AppInfoList先执行完毕
+                    try {
+                        countDownLatch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     System.out.println("输出的是系统App");
                     progressBar.setVisibility(View.GONE);
                     //合并HistoryAppList和SystemAppInfoList,生成RefreshAppInfoList
